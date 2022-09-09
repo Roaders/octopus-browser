@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { IProduct } from '../../contracts';
 import { OctopusService } from '../../services';
 
-const checkboxKeys = ['variable', 'green', 'tracker', 'prepay', 'business', 'restricted'] as const;
+const checkboxKeys = ['variable', 'green', 'tracker', 'prepay', 'business', 'restricted', 'import', 'export'] as const;
 
 type CheckboxKey = typeof checkboxKeys[number];
 
@@ -13,7 +13,7 @@ type CheckboxKey = typeof checkboxKeys[number];
 export class TariffBrowserComponent {
     private _filters: Partial<Record<CheckboxKey, boolean>> = {};
 
-    private _checkboxes: ReadonlyArray<CheckboxKey> = checkboxKeys;
+    private _checkboxes: ReadonlyArray<CheckboxKey> = [];
     private _products: IProduct[] | undefined;
     private _filteredProducts: IProduct[] | undefined;
 
@@ -31,6 +31,29 @@ export class TariffBrowserComponent {
         this.reset();
     }
 
+    public filterDisplayString(key: CheckboxKey): string {
+        switch (key) {
+            case 'business':
+                return 'Business';
+            case 'export':
+                return 'Export';
+            case 'green':
+                return 'Green';
+            case 'import':
+                return 'Import';
+            case 'prepay':
+                return 'Pre Pay';
+            case 'restricted':
+                return 'Restricted';
+            case 'tracker':
+                return 'Tracker';
+            case 'variable':
+                return 'Variable';
+            default:
+                return key;
+        }
+    }
+
     public toggleFilter(key: CheckboxKey) {
         this._filters[key] = !this.isChecked(key);
 
@@ -42,23 +65,30 @@ export class TariffBrowserComponent {
     }
 
     public reset(): void {
-        this._filters = {
-            business: true,
-            green: true,
-            prepay: true,
-            tracker: true,
-            variable: true,
-        };
+        this._filters = {};
+
+        this.filterProducts();
+    }
+
+    public selectProduct(product: IProduct) {
+        console.log(product);
     }
 
     private async loadProducts(): Promise<void> {
         this._products = (await this.octopus.getProductsAsync()).results;
 
-        this._checkboxes = checkboxKeys.filter((key) => this._products?.some((product) => product[`is_${key}`]));
-
-        const prepay = this._products.find((product) => product.is_prepay);
-
-        console.log(`prepay`, prepay);
+        this._checkboxes = checkboxKeys.filter((key) =>
+            this._products?.some((product) => {
+                switch (key) {
+                    case 'import':
+                        return (product.direction = 'IMPORT');
+                    case 'export':
+                        return (product.direction = 'EXPORT');
+                    default:
+                        return product[`is_${key}`];
+                }
+            })
+        );
 
         this.filterProducts();
     }
@@ -66,12 +96,15 @@ export class TariffBrowserComponent {
     private filterProducts() {
         this._filteredProducts = this._products?.filter(
             (product) =>
+                Object.values(this._filters).every((filterValue) => !filterValue) ||
                 (this.isChecked('business') && product.is_business) ||
                 (this.isChecked('green') && product.is_green) ||
                 (this.isChecked('prepay') && product.is_prepay) ||
                 (this.isChecked('restricted') && product.is_restricted) ||
                 (this.isChecked('tracker') && product.is_tracker) ||
-                (this.isChecked('variable') && product.is_variable)
+                (this.isChecked('variable') && product.is_variable) ||
+                (this.isChecked('import') && product.direction === 'IMPORT') ||
+                (this.isChecked('export') && product.direction === 'EXPORT')
         );
     }
 }

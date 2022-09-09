@@ -24,5 +24,12 @@ export interface IProduct {
     available_from: string | null;
     available_to: string | null;
     // undocumented (might disappear)
-    direction?: string | null;
+    direction?: 'IMPORT' | 'EXPORT' | null;
+    links: ILink[];
+}
+
+export interface ILink {
+    href: string;
+    method: string;
+    rel: string;
 }
