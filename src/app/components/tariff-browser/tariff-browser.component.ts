@@ -12,8 +12,10 @@ type CheckboxKey = typeof checkboxKeys[number];
 })
 export class TariffBrowserComponent {
     private _filters: Partial<Record<CheckboxKey, boolean>> = {};
+    private _checkedBrands: Partial<Record<string, boolean>> = {};
 
     private _checkboxes: ReadonlyArray<CheckboxKey> = [];
+    private _brands: ReadonlyArray<string> = [];
     private _products: IProduct[] | undefined;
     private _filteredProducts: IProduct[] | undefined;
 
@@ -23,6 +25,10 @@ export class TariffBrowserComponent {
 
     public get checkboxes(): ReadonlyArray<CheckboxKey> {
         return this._checkboxes;
+    }
+
+    public get brands(): ReadonlyArray<string> {
+        return this._brands;
     }
 
     constructor(private octopus: OctopusService) {
@@ -64,8 +70,19 @@ export class TariffBrowserComponent {
         return this._filters[key] || false;
     }
 
+    public toggleBrand(brand: string) {
+        this._checkedBrands[brand] = !this.isBrandChecked(brand);
+
+        this.filterProducts();
+    }
+
+    public isBrandChecked(brand: string): boolean {
+        return this._checkedBrands[brand] || false;
+    }
+
     public reset(): void {
         this._filters = {};
+        this._checkedBrands = { OCTOPUS_ENERGY: true };
 
         this.filterProducts();
     }
@@ -75,10 +92,24 @@ export class TariffBrowserComponent {
     }
 
     private async loadProducts(): Promise<void> {
-        this._products = (await this.octopus.getProductsAsync()).results;
+        const products = (await this.octopus.getProductsAsync()).results;
 
+        this._products = products;
+
+        this.updateBrands(products);
+        this.updateCheckboxes(products);
+
+        this.filterProducts();
+    }
+
+    private updateBrands(products: IProduct[]) {
+        const brands = products.reduce((set, product) => set.add(product.brand), new Set<string>());
+        this._brands = Array.from(brands).sort();
+    }
+
+    private updateCheckboxes(products: IProduct[]) {
         this._checkboxes = checkboxKeys.filter((key) =>
-            this._products?.some((product) => {
+            products.some((product) => {
                 switch (key) {
                     case 'import':
                         return (product.direction = 'IMPORT');
@@ -89,22 +120,27 @@ export class TariffBrowserComponent {
                 }
             })
         );
-
-        this.filterProducts();
     }
 
     private filterProducts() {
-        this._filteredProducts = this._products?.filter(
-            (product) =>
-                Object.values(this._filters).every((filterValue) => !filterValue) ||
-                (this.isChecked('business') && product.is_business) ||
-                (this.isChecked('green') && product.is_green) ||
-                (this.isChecked('prepay') && product.is_prepay) ||
-                (this.isChecked('restricted') && product.is_restricted) ||
-                (this.isChecked('tracker') && product.is_tracker) ||
-                (this.isChecked('variable') && product.is_variable) ||
-                (this.isChecked('import') && product.direction === 'IMPORT') ||
-                (this.isChecked('export') && product.direction === 'EXPORT')
-        );
+        const selectedBrands = Object.entries(this._checkedBrands)
+            .filter(([_key, value]) => value === true)
+            .map(([key]) => key);
+
+        this._filteredProducts = this._products
+            ?.filter(
+                (product) =>
+                    (Object.values(this._filters).every((filterValue) => !filterValue) ||
+                        (this.isChecked('business') && product.is_business) ||
+                        (this.isChecked('green') && product.is_green) ||
+                        (this.isChecked('prepay') && product.is_prepay) ||
+                        (this.isChecked('restricted') && product.is_restricted) ||
+                        (this.isChecked('tracker') && product.is_tracker) ||
+                        (this.isChecked('variable') && product.is_variable) ||
+                        (this.isChecked('import') && product.direction === 'IMPORT') ||
+                        (this.isChecked('export') && product.direction === 'EXPORT')) &&
+                    (selectedBrands.length === 0 || selectedBrands.includes(product.brand))
+            )
+            .sort((a, b) => a.full_name.localeCompare(b.full_name));
     }
 }
