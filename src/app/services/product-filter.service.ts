@@ -87,7 +87,7 @@ export class ProductFilterService {
 
     private async loadProducts(): Promise<void> {
         this.reset();
-        const products = (await firstValueFrom(this.octopusService.getProductsAsync())).results;
+        const products = (await this.octopusService.getProductsAsync()).results;
 
         this.updateBrands(products);
         this.updateCheckboxes(products);

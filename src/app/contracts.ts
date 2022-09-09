@@ -1,4 +1,4 @@
-export interface IProductResponse {
+export interface IProductsResponse {
     count: number;
     next: string | null;
     previous: string | null;

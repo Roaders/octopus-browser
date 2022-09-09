@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { IProduct } from '../../contracts';
+import { OctopusService } from '../../services';
 import { ProductFilterService } from '../../services/product-filter.service';
 
 @Component({
@@ -7,14 +8,18 @@ import { ProductFilterService } from '../../services/product-filter.service';
     templateUrl: './tariff-browser.component.html',
 })
 export class TariffBrowserComponent implements OnInit {
-    constructor(private productsService: ProductFilterService) {}
+    constructor(private productsService: ProductFilterService, private octopusService: OctopusService) {}
 
     ngOnInit(): void {
         this.productsService.initialise();
     }
 
-    public selectProduct(product: IProduct) {
+    public async selectProduct(product: IProduct) {
         console.log(product);
+
+        const fullProduct = await this.octopusService.getProductAsync(product.code);
+
+        console.log(fullProduct);
     }
 
     public get products(): IProduct[] | undefined {

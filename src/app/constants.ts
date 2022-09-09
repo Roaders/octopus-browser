@@ -1,4 +1,5 @@
 export const PRODUCTS_URI = `https://api.octopus.energy/v1/products`;
+export const PRODUCT_URI = `https://api.octopus.energy/v1/products/{code}/`;
 
 export const checkboxKeys = [
     'variable',
