@@ -1,11 +1,20 @@
 import { Injectable } from '@morgan-stanley/needle';
+import { from, mergeMap, Observable, shareReplay } from 'rxjs';
+import { PRODUCTS_URI } from '../constants';
 import { IProductResponse } from '../contracts';
 
 @Injectable()
 export class OctopusService {
-    public async getProductsAsync(): Promise<IProductResponse> {
-        const response = await fetch(`https://api.octopus.energy/v1/products`);
+    private _productsStream?: Observable<IProductResponse>;
 
-        return response.json();
+    public getProductsAsync(): Observable<IProductResponse> {
+        if (this._productsStream == null) {
+            this._productsStream = from(fetch(PRODUCTS_URI)).pipe(
+                mergeMap((response) => response.json()),
+                shareReplay()
+            );
+        }
+
+        return this._productsStream;
     }
 }

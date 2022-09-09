@@ -1,146 +1,23 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { IProduct } from '../../contracts';
-import { OctopusService } from '../../services';
-
-const checkboxKeys = ['variable', 'green', 'tracker', 'prepay', 'business', 'restricted', 'import', 'export'] as const;
-
-type CheckboxKey = typeof checkboxKeys[number];
+import { ProductFilterService } from '../../services/product-filter.service';
 
 @Component({
     selector: 'tariff-browser',
     templateUrl: './tariff-browser.component.html',
 })
-export class TariffBrowserComponent {
-    private _filters: Partial<Record<CheckboxKey, boolean>> = {};
-    private _checkedBrands: Partial<Record<string, boolean>> = {};
+export class TariffBrowserComponent implements OnInit {
+    constructor(private productsService: ProductFilterService) {}
 
-    private _checkboxes: ReadonlyArray<CheckboxKey> = [];
-    private _brands: ReadonlyArray<string> = [];
-    private _products: IProduct[] | undefined;
-    private _filteredProducts: IProduct[] | undefined;
-
-    public get products(): IProduct[] | undefined {
-        return this._filteredProducts;
-    }
-
-    public get checkboxes(): ReadonlyArray<CheckboxKey> {
-        return this._checkboxes;
-    }
-
-    public get brands(): ReadonlyArray<string> {
-        return this._brands;
-    }
-
-    constructor(private octopus: OctopusService) {
-        this.loadProducts();
-
-        this.reset();
-    }
-
-    public filterDisplayString(key: CheckboxKey): string {
-        switch (key) {
-            case 'business':
-                return 'Business';
-            case 'export':
-                return 'Export';
-            case 'green':
-                return 'Green';
-            case 'import':
-                return 'Import';
-            case 'prepay':
-                return 'Pre Pay';
-            case 'restricted':
-                return 'Restricted';
-            case 'tracker':
-                return 'Tracker';
-            case 'variable':
-                return 'Variable';
-            default:
-                return key;
-        }
-    }
-
-    public toggleFilter(key: CheckboxKey) {
-        this._filters[key] = !this.isChecked(key);
-
-        this.filterProducts();
-    }
-
-    public isChecked(key: CheckboxKey): boolean {
-        return this._filters[key] || false;
-    }
-
-    public toggleBrand(brand: string) {
-        this._checkedBrands[brand] = !this.isBrandChecked(brand);
-
-        this.filterProducts();
-    }
-
-    public isBrandChecked(brand: string): boolean {
-        return this._checkedBrands[brand] || false;
-    }
-
-    public reset(): void {
-        this._filters = {};
-        this._checkedBrands = { OCTOPUS_ENERGY: true };
-
-        this.filterProducts();
+    ngOnInit(): void {
+        this.productsService.initialise();
     }
 
     public selectProduct(product: IProduct) {
         console.log(product);
     }
 
-    private async loadProducts(): Promise<void> {
-        const products = (await this.octopus.getProductsAsync()).results;
-
-        this._products = products;
-
-        this.updateBrands(products);
-        this.updateCheckboxes(products);
-
-        this.filterProducts();
-    }
-
-    private updateBrands(products: IProduct[]) {
-        const brands = products.reduce((set, product) => set.add(product.brand), new Set<string>());
-        this._brands = Array.from(brands).sort();
-    }
-
-    private updateCheckboxes(products: IProduct[]) {
-        this._checkboxes = checkboxKeys.filter((key) =>
-            products.some((product) => {
-                switch (key) {
-                    case 'import':
-                        return (product.direction = 'IMPORT');
-                    case 'export':
-                        return (product.direction = 'EXPORT');
-                    default:
-                        return product[`is_${key}`];
-                }
-            })
-        );
-    }
-
-    private filterProducts() {
-        const selectedBrands = Object.entries(this._checkedBrands)
-            .filter(([_key, value]) => value === true)
-            .map(([key]) => key);
-
-        this._filteredProducts = this._products
-            ?.filter(
-                (product) =>
-                    (Object.values(this._filters).every((filterValue) => !filterValue) ||
-                        (this.isChecked('business') && product.is_business) ||
-                        (this.isChecked('green') && product.is_green) ||
-                        (this.isChecked('prepay') && product.is_prepay) ||
-                        (this.isChecked('restricted') && product.is_restricted) ||
-                        (this.isChecked('tracker') && product.is_tracker) ||
-                        (this.isChecked('variable') && product.is_variable) ||
-                        (this.isChecked('import') && product.direction === 'IMPORT') ||
-                        (this.isChecked('export') && product.direction === 'EXPORT')) &&
-                    (selectedBrands.length === 0 || selectedBrands.includes(product.brand))
-            )
-            .sort((a, b) => a.full_name.localeCompare(b.full_name));
+    public get products(): IProduct[] | undefined {
+        return this.productsService.products;
     }
 }
