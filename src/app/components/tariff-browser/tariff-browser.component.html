@@ -1,0 +1,22 @@
+
+<div>
+    <h2>Tariff Browser</h2>
+
+    <h3>Filters:</h3>
+
+    <div class="d-flex">
+        <div class="mx-2" *ngFor="let key of checkboxes">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" [checked]="isChecked(key)" (click)="toggleFilter(key)">
+                <label class="form-check-label" for="flexCheckDefault">{{key}}</label>
+            </div>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-sm" (click)="reset()">Reset</button>
+
+    </div>
+
+    <ul>
+        <li *ngFor="let product of products">{{product.display_name}}</li>
+    </ul>
+</div>
