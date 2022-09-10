@@ -33,3 +33,13 @@ export interface ILink {
     method: string;
     rel: string;
 }
+
+export const RegionCodes = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P'] as const;
+
+export type RegionCode = typeof RegionCodes[number];
+
+export interface IRegion {
+    code: RegionCode;
+    MPAN: number;
+    name: string;
+}

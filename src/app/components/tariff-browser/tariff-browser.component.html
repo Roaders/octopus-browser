@@ -1,13 +1,10 @@
 <div>
 
-    <product-filter></product-filter>
 
-
-    <div class="mb-3">
-        <label for="productSelect" class="form-label">Select Product ({{products?.length || 0}})</label>
-        <select class="form-select" id="productSelect">
-            <option *ngFor="let product of products" >{{product.full_name}}</option>
-        </select>
+    <div>
+        <h2>Select Tariff</h2>
+        <product-filter></product-filter>
+        <tariff-selector></tariff-selector>
     </div>
 
 

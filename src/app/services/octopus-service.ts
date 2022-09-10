@@ -2,8 +2,8 @@ import { Injectable } from '@morgan-stanley/needle';
 import { firstValueFrom, from, mergeMap, Observable, shareReplay } from 'rxjs';
 import * as format from 'string-template';
 
-import { PRODUCT_URI, PRODUCTS_URI } from '../constants';
-import { IProduct, IProductsResponse } from '../contracts';
+import { PRODUCT_URI, PRODUCTS_URI, Regions } from '../constants';
+import { IProduct, IProductsResponse, IRegion } from '../contracts';
 
 @Injectable()
 export class OctopusService {
@@ -24,5 +24,9 @@ export class OctopusService {
         const response = await fetch(format(PRODUCT_URI, { code }));
 
         return response.json();
+    }
+
+    public async getRegionsAsync(): Promise<IRegion[]> {
+        return Regions;
     }
 }

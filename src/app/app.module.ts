@@ -5,9 +5,10 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { AppComponent } from './components/app/app.component';
 import { ProductFilterComponent } from './components/product-filter/product-filter.component';
 import { TariffBrowserComponent } from './components/tariff-browser/tariff-browser.component';
+import { TariffSelectorComponent } from './components/tariff-selector.component/tariff-selector.component';
 
 @NgModule({
-    declarations: [AppComponent, TariffBrowserComponent, ProductFilterComponent],
+    declarations: [AppComponent, TariffBrowserComponent, ProductFilterComponent, TariffSelectorComponent],
     imports: [BrowserModule, NgbModule],
     providers: [],
     bootstrap: [AppComponent],
