@@ -3,7 +3,7 @@ import { firstValueFrom, from, mergeMap, Observable, shareReplay } from 'rxjs';
 import * as format from 'string-template';
 
 import { PRODUCT_URI, PRODUCTS_URI, Regions } from '../constants';
-import { IProduct, IProductsResponse, IRegion } from '../contracts';
+import { IProductDetail, IProductsResponse, IRegion } from '../contracts';
 
 @Injectable()
 export class OctopusService {
@@ -20,7 +20,7 @@ export class OctopusService {
         return firstValueFrom(this._productsStream);
     }
 
-    public async getProductAsync(code: string): Promise<IProduct> {
+    public async getProductAsync(code: string): Promise<IProductDetail> {
         const response = await fetch(format(PRODUCT_URI, { code }));
 
         return response.json();

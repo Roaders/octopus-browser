@@ -1,7 +1,8 @@
 import { Component, OnInit, Output } from '@angular/core';
+import { firstValueFrom, from, map, shareReplay } from 'rxjs';
 
-import { IProduct, IRegion } from '../../contracts';
-import { SelectedItemHelper, SelectedItemHelperFactory } from '../../helpers/selected.helper';
+import { IProduct, IProductDetail, IRegion, IRegister } from '../../contracts';
+import { isIRegister, SelectedItemHelper, SelectedItemHelperFactory } from '../../helpers';
 import { OctopusService } from '../../services';
 import { ProductFilterService } from '../../services/product-filter.service';
 
@@ -20,6 +21,12 @@ export class TariffSelectorComponent implements OnInit {
             (helper) => `Select Product (${helper.items?.length ?? 0})`
         );
         this.productChange = this.productSelector.itemChange;
+        this.productChange.subscribe({ next: (product: IProduct | undefined) => this.onProductSelected(product) });
+
+        this.registerSelector = selectedItemFactory.create(
+            (register) => register.code,
+            () => 'Select Register'
+        );
 
         this.regionSelector = selectedItemFactory.create(
             (region) => region.name,
@@ -27,7 +34,10 @@ export class TariffSelectorComponent implements OnInit {
         );
     }
 
+    private _productDetail: IProductDetail | undefined;
+
     public readonly productSelector: SelectedItemHelper<IProduct>;
+    public readonly registerSelector: SelectedItemHelper<IRegister>;
     public readonly regionSelector: SelectedItemHelper<IRegion>;
 
     @Output()
@@ -41,4 +51,26 @@ export class TariffSelectorComponent implements OnInit {
     private async loadRegions() {
         this.regionSelector.items = await this.octopusService.getRegionsAsync();
     }
+
+    private onProductSelected(product: IProduct | undefined) {
+        this._productDetail = undefined;
+
+        if (product == null) {
+            this.regionSelector.items = undefined;
+            return;
+        }
+
+        const loadProductDetail = from(this.octopusService.getProductAsync(product.code)).pipe(shareReplay());
+
+        const loadRegisters = loadProductDetail.pipe(map((detail) => mapProductDetailToRegisters(detail)));
+
+        this.registerSelector.loadItems(firstValueFrom(loadRegisters));
+        loadProductDetail.subscribe({ next: (detail) => (this._productDetail = detail) });
+    }
+}
+
+function mapProductDetailToRegisters(detail: IProductDetail): IRegister[] {
+    return Object.entries(detail)
+        .map(([code, values]) => ({ code, values }))
+        .filter(isIRegister);
 }

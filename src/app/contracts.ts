@@ -48,11 +48,19 @@ export type BillingType = `direct_debit_monthly` | `direct_debit_quarterly`;
 export type TariffBillingRecord = Partial<Record<BillingType, ITariff>>;
 export type TariffRegisterRecord = Record<`_${RegionCode}`, TariffBillingRecord>;
 
-export interface IProductDetail extends IProduct {
-    tariffs_active_at: string;
+export interface IProductRegisters {
     single_register_electricity_tariffs: TariffRegisterRecord | Record<string, never>;
     dual_register_electricity_tariffs: TariffRegisterRecord | Record<string, never>;
     single_register_gas_tariffs: TariffRegisterRecord | Record<string, never>;
+}
+
+export interface IRegister {
+    code: keyof IProductRegisters;
+    values: TariffRegisterRecord;
+}
+
+export interface IProductDetail extends IProduct, IProductRegisters {
+    tariffs_active_at: string;
 }
 
 export interface ILink<TRel extends string = string> {

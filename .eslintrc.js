@@ -15,13 +15,16 @@ module.exports = {
         ecmaVersion: 11,
         sourceType: 'module',
     },
-    plugins: ['@typescript-eslint', 'simple-import-sort'],
+    plugins: ['@typescript-eslint', 'simple-import-sort', 'import'],
     ignorePatterns: ['dist/'],
     rules: {
         'sort-imports': 'off',
         'prettier/prettier': ['error', { endOfLine: 'auto', tabWidth: 4, singleQuote: true, printWidth: 120 }],
         'simple-import-sort/imports': 'error',
         'simple-import-sort/exports': 'error',
+        'import/first': 'error',
+        'import/newline-after-import': 'error',
+        'import/no-duplicates': 'error',
     },
     overrides: [
         {

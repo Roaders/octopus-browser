@@ -24,6 +24,12 @@ export class SelectedItemHelper<T> {
 
     public items: T[] | undefined;
 
+    private _loading = false;
+
+    public get loading() {
+        return this._loading;
+    }
+
     private _selectedItem: T | undefined;
 
     public get selectedItem(): T | undefined {
@@ -32,6 +38,16 @@ export class SelectedItemHelper<T> {
 
     public get selectionDisabled(): boolean {
         return false;
+    }
+
+    public async loadItems(promise: Promise<T[]>): Promise<T[]> {
+        this._loading = true;
+
+        this.items = await promise;
+
+        this._loading = false;
+
+        return this.items;
     }
 
     public selectItem(item: T | undefined) {
