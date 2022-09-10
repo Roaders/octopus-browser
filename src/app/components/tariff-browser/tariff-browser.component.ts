@@ -16,13 +16,7 @@ export class TariffBrowserComponent implements OnInit {
     }
 
     public async onProductSelected(product?: IProduct) {
-        console.log(`onProductSelected`, product);
-
-        if (product != null) {
-            const fullProduct = await this.octopusService.getProductAsync(product.code);
-
-            console.log(fullProduct);
-        }
+        console.log(`onProductSelected`, product?.code);
     }
 
     public get products(): IProduct[] | undefined {

@@ -16,8 +16,8 @@ type NoSelectionButtonTextFunction<T> = (helper: SelectedItemHelper<T>) => strin
 
 export class SelectedItemHelper<T> {
     constructor(
-        private selectedText: ItemSelectedButtonTextFunction<T>,
-        private nonSelectedText: NoSelectionButtonTextFunction<T>
+        public readonly selectedText: ItemSelectedButtonTextFunction<T>,
+        public readonly nonSelectedText: NoSelectionButtonTextFunction<T>
     ) {}
 
     public readonly itemChange = new EventEmitter<T | undefined>();

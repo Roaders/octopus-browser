@@ -1,8 +1,8 @@
 import { Component, OnInit, Output } from '@angular/core';
 import { firstValueFrom, from, map, shareReplay } from 'rxjs';
 
-import { IProduct, IProductDetail, IRegion, IRegister } from '../../contracts';
-import { isIRegister, SelectedItemHelper, SelectedItemHelperFactory } from '../../helpers';
+import { IBillingType, IProduct, IProductDetail, IRegion, IRegister } from '../../contracts';
+import { isIBillingType, isIRegister, SelectedItemHelper, SelectedItemHelperFactory } from '../../helpers';
 import { OctopusService } from '../../services';
 import { ProductFilterService } from '../../services/product-filter.service';
 
@@ -32,6 +32,14 @@ export class TariffSelectorComponent implements OnInit {
             (region) => region.name,
             () => 'Select Region'
         );
+        this.regionSelector.itemChange.subscribe({
+            next: (region: IRegion | undefined) => this.onRegionSelected(region),
+        });
+
+        this.billingSelector = selectedItemFactory.create(
+            (billing) => this.billingDisplayValue(billing),
+            () => 'Select Billing Type'
+        );
     }
 
     private _productDetail: IProductDetail | undefined;
@@ -39,6 +47,7 @@ export class TariffSelectorComponent implements OnInit {
     public readonly productSelector: SelectedItemHelper<IProduct>;
     public readonly registerSelector: SelectedItemHelper<IRegister>;
     public readonly regionSelector: SelectedItemHelper<IRegion>;
+    public readonly billingSelector: SelectedItemHelper<IBillingType>;
 
     @Output()
     public readonly productChange;
@@ -61,6 +70,17 @@ export class TariffSelectorComponent implements OnInit {
         }
     }
 
+    public billingDisplayValue(register: IBillingType): string {
+        switch (register.type) {
+            case 'direct_debit_monthly':
+                return 'Monthly DD';
+            case 'direct_debit_quarterly':
+                return 'Quarterly DD';
+            default:
+                return register.type;
+        }
+    }
+
     private async loadRegions() {
         this.regionSelector.items = await this.octopusService.getRegionsAsync();
     }
@@ -79,6 +99,25 @@ export class TariffSelectorComponent implements OnInit {
 
         this.registerSelector.loadItems(firstValueFrom(loadRegisters));
         loadProductDetail.subscribe({ next: (detail) => (this._productDetail = detail) });
+    }
+
+    private onRegionSelected(region: IRegion | undefined) {
+        const registerCode = this.registerSelector.selectedItem?.code;
+        const register = registerCode != null ? this._productDetail?.[registerCode] : undefined;
+        const regionCode = region?.code;
+        const tariff = regionCode != null ? register?.[`_${regionCode}`] : undefined;
+
+        if (tariff == null) {
+            this.billingSelector.items = undefined;
+            return;
+        }
+
+        this.billingSelector.items = Object.entries(tariff)
+            .map(([type, tariff]) => ({
+                type,
+                tariff,
+            }))
+            .filter(isIBillingType);
     }
 }
 

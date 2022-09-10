@@ -43,9 +43,19 @@ export interface ITariff {
     exit_fees_type: string;
 }
 
-export type BillingType = `direct_debit_monthly` | `direct_debit_quarterly`;
+export type BillingType = keyof IBillingTypes;
 
-export type TariffBillingRecord = Partial<Record<BillingType, ITariff>>;
+export interface IBillingType {
+    type: BillingType;
+    tariff: ITariff;
+}
+
+export interface IBillingTypes {
+    direct_debit_monthly: ITariff;
+    direct_debit_quarterly: ITariff;
+}
+
+export type TariffBillingRecord = Partial<IBillingTypes>;
 export type TariffRegisterRecord = Record<`_${RegionCode}`, TariffBillingRecord>;
 
 export interface IProductRegisters {

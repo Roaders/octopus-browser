@@ -1,0 +1,11 @@
+<div class="pe-2">
+    <div *ngIf="!selectionHelper.loading"  ngbDropdown class="d-inline-block">
+        <button type="button" class="btn btn-outline-primary" id="selectionDropdown" ngbDropdownToggle [disabled]="selectionHelper.selectionDisabled">{{selectionHelper.buttonText}}</button>
+        <div ngbDropdownMenu aria-labelledby="selectionDropdown">
+            <button ngbDropdownItem *ngFor="let item of selectionHelper.items" (click)="selectionHelper.selectItem(item)">{{selectionHelper.selectedText(item, selectionHelper)}}</button>
+        </div>
+    </div>
+    <div *ngIf="selectionHelper.loading"> 
+        Loading...
+    </div>
+</div>
