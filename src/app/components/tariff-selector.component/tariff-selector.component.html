@@ -13,7 +13,7 @@
     <!-- Register Selector -->
     <div *ngIf="productSelector.selectedItem != null" class="pe-2">
         <div *ngIf="!registerSelector.loading" ngbDropdown class="d-inline-block">
-            <button type="button" class="btn btn-outline-primary" id="registerSelectionDropdown" ngbDropdownToggle>{{registerSelector.buttonText}}</button>
+            <button type="button" class="btn btn-outline-primary" id="registerSelectionDropdown" ngbDropdownToggle [disabled]="registerSelector.selectionDisabled">{{registerSelector.buttonText}}</button>
             <div ngbDropdownMenu aria-labelledby="registerSelectionDropdown">
                 <button ngbDropdownItem *ngFor="let register of registerSelector.items" (click)="registerSelector.selectItem(register)">{{registerDisplayValue(register)}}</button>
             </div>

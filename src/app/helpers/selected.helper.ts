@@ -49,7 +49,7 @@ export class SelectedItemHelper<T> {
     }
 
     public get selectionDisabled(): boolean {
-        return false;
+        return this._items?.length === 1 && this.selectItem != null;
     }
 
     public async loadItems(promise: Promise<T[]>): Promise<T[]> {
