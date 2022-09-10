@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 
-import { IProduct } from '../../contracts';
+import { IProductDetail } from '../../contracts';
 
 @Component({
     selector: 'selected-product',
@@ -8,5 +8,5 @@ import { IProduct } from '../../contracts';
 })
 export class SelectedProductComponent {
     @Input()
-    public product?: IProduct;
+    public product?: IProductDetail<Date>;
 }

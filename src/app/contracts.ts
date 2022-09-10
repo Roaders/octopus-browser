@@ -5,7 +5,7 @@ export interface IProductsResponse {
     results: IProduct[];
 }
 
-export interface IProduct {
+export interface IProduct<TDate extends Date | string = string> {
     code: string;
     full_name: string;
     display_name: string;
@@ -21,8 +21,8 @@ export interface IProduct {
      */
     term: number;
     brand: string;
-    available_from: string | null;
-    available_to: string | null;
+    available_from: TDate | null;
+    available_to: TDate | null;
     // undocumented (might disappear)
     direction?: 'IMPORT' | 'EXPORT' | null;
     links: [ILink<'self'>];
@@ -41,6 +41,12 @@ export interface ITariff {
     exit_fees_exc_vat: number;
     exit_fees_inc_vat: number;
     exit_fees_type: string;
+    links: (
+        | ILink<'standard_unit_rates'>
+        | ILink<'standing_charges'>
+        | ILink<'day_unit_rates'>
+        | ILink<'night_unit_rates'>
+    )[];
 }
 
 export type BillingType = keyof IBillingTypes;
@@ -69,8 +75,8 @@ export interface IRegister {
     values: TariffRegisterRecord;
 }
 
-export interface IProductDetail extends IProduct, IProductRegisters {
-    tariffs_active_at: string;
+export interface IProductDetail<TDate extends Date | string = string> extends IProduct<TDate>, IProductRegisters {
+    tariffs_active_at: TDate;
 }
 
 export interface ILink<TRel extends string = string> {

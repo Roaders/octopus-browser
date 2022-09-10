@@ -19,8 +19,9 @@ export class TariffSelectorComponent implements OnInit {
         this.productSelector = selectedItemFactory.create((product) =>
             product != null ? product.full_name : `Select Product (${this.productSelector.items?.length ?? 0})`
         );
-        this.productChange = this.productSelector.itemChange;
-        this.productChange.subscribe({ next: (product: IProduct | undefined) => this.onProductSelected(product) });
+        this.productSelector.itemChange.subscribe({
+            next: (product: IProduct | undefined) => this.onProductSelected(product),
+        });
 
         this.registerSelector = selectedItemFactory.create((register) =>
             register != null ? this.registerDisplayValue(register) : 'Select Register'
@@ -39,7 +40,7 @@ export class TariffSelectorComponent implements OnInit {
         this.billingTypeChange = this.billingSelector.itemChange;
     }
 
-    private _productDetail: IProductDetail | undefined;
+    private _productDetail: IProductDetail<Date> | undefined;
 
     public readonly productSelector: SelectedItemHelper<IProduct>;
     public readonly registerSelector: SelectedItemHelper<IRegister>;
@@ -47,7 +48,7 @@ export class TariffSelectorComponent implements OnInit {
     public readonly billingSelector: SelectedItemHelper<IBillingType>;
 
     @Output()
-    public readonly productChange: EventEmitter<IProduct | undefined>;
+    public readonly productChange = new EventEmitter<IProductDetail<Date> | undefined>();
 
     @Output()
     public readonly registerChange: EventEmitter<IRegister | undefined>;
@@ -97,6 +98,7 @@ export class TariffSelectorComponent implements OnInit {
 
     private onProductSelected(product: IProduct | undefined) {
         this._productDetail = undefined;
+        this.productChange.emit(undefined);
         this.registerSelector.selectItem(undefined);
         this.regionSelector.selectItem(undefined);
         this.billingSelector.selectItem(undefined);
@@ -106,12 +108,17 @@ export class TariffSelectorComponent implements OnInit {
             return;
         }
 
-        const loadProductDetail = from(this.octopusService.getProductAsync(product.code)).pipe(shareReplay());
+        const loadProductDetail = from(this.octopusService.getProductAsync(product)).pipe(shareReplay());
 
         const loadRegisters = loadProductDetail.pipe(map((detail) => mapProductDetailToRegisters(detail)));
 
         this.registerSelector.loadItems(firstValueFrom(loadRegisters));
-        loadProductDetail.subscribe({ next: (detail) => (this._productDetail = detail) });
+        loadProductDetail.subscribe({
+            next: (detail) => {
+                this._productDetail = detail;
+                this.productChange.emit(detail);
+            },
+        });
     }
 
     private onRegionSelected(region: IRegion | undefined) {
@@ -136,7 +143,7 @@ export class TariffSelectorComponent implements OnInit {
     }
 }
 
-function mapProductDetailToRegisters(detail: IProductDetail): IRegister[] {
+function mapProductDetailToRegisters(detail: IProductDetail<Date>): IRegister[] {
     return Object.entries(detail)
         .map(([code, values]) => ({ code, values }))
         .filter(isIRegister);

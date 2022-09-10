@@ -11,7 +11,10 @@
             <td class="label-cell">Code</td>
             <td>{{product.code}}</td>
         </tr>
-
+        <tr>
+            <td class="label-cell">Direction</td>
+            <td>{{product.direction}}</td>
+        </tr>
         <tr>
             <td class="label-cell">Description</td>
             <td>{{product.description}}</td>
@@ -50,11 +53,15 @@
         </tr>
         <tr>
             <td class="label-cell">Available From</td>
-            <td>{{product.available_from}}</td>
+            <td>{{product.available_from | date}}</td>
         </tr>
         <tr>
             <td class="label-cell">Available To</td>
-            <td class="label-cell">{{product.available_to}}</td>
+            <td class="label-cell">{{product.available_to | date}}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Tariffs Active At</td>
+            <td class="label-cell">{{product.tariffs_active_at | date}}</td>
         </tr>
 
     </table>
