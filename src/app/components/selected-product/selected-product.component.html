@@ -18,35 +18,35 @@
         </tr>
         <tr>
             <td class="label-cell">Variable</td>
-            <td>{{product.is_variable}}</td>
+            <td>{{product.is_variable | yesNo}}</td>
         </tr>
         <tr>
             <td class="label-cell">Green</td>
-            <td>{{product.is_green}}</td>
+            <td>{{product.is_green | yesNo}}</td>
         </tr>
         <tr>
             <td class="label-cell">Tracker</td>
-            <td>{{product.is_tracker}}</td>
+            <td>{{product.is_tracker | yesNo}}</td>
         </tr>
         <tr>
             <td class="label-cell">Prepay</td>
-            <td>{{product.is_prepay}}</td>
+            <td>{{product.is_prepay | yesNo}}</td>
         </tr>
         <tr>
             <td class="label-cell">Business</td>
-            <td>{{product.is_business}}</td>
+            <td>{{product.is_business | yesNo}}</td>
         </tr>
         <tr>
             <td class="label-cell">Restricted</td>
-            <td>{{product.is_restricted}}</td>
+            <td>{{product.is_restricted | yesNo}}</td>
         </tr>
         <tr>
             <td class="label-cell">Term</td>
-            <td>{{product.term}}</td>
+            <td>{{product.term}} months</td>
         </tr>
         <tr>
             <td class="label-cell">Brand</td>
-            <td>{{product.brand}}</td>
+            <td>{{product.brand | brandName}}</td>
         </tr>
         <tr>
             <td class="label-cell">Available From</td>

@@ -9,6 +9,8 @@ import { SelectedProductComponent } from './components/selected-product/selected
 import { SelectedTariffComponent } from './components/selected-tariff/selected-tariff.component';
 import { TariffBrowserComponent } from './components/tariff-browser/tariff-browser.component';
 import { TariffSelectorComponent } from './components/tariff-selector.component/tariff-selector.component';
+import { BrandNamePipe } from './pipes/brand-name.pipe';
+import { YesNoPipe } from './pipes/yes-no.pipe';
 
 @NgModule({
     declarations: [
@@ -19,6 +21,8 @@ import { TariffSelectorComponent } from './components/tariff-selector.component/
         ItemSelectComponent,
         SelectedProductComponent,
         SelectedTariffComponent,
+        YesNoPipe,
+        BrandNamePipe,
     ],
     imports: [BrowserModule, NgbModule],
     providers: [],
