@@ -1,5 +1,5 @@
 import { Injectable } from '@morgan-stanley/needle';
-import { firstValueFrom } from 'rxjs';
+
 import { CheckboxKey, checkboxKeys } from '../constants';
 import { IProduct } from '../contracts';
 import { OctopusService } from './octopus-service';
@@ -126,7 +126,7 @@ export class ProductFilterService {
 
     private filterProducts() {
         const selectedBrands = Object.entries(this._checkedBrands)
-            .filter(([_key, value]) => value === true)
+            .filter((values) => values[1] === true)
             .map(([key]) => key);
 
         this._filteredProducts = this._products

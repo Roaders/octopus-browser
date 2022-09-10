@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+
 import { IProduct } from '../../contracts';
 import { OctopusService } from '../../services';
 import { ProductFilterService } from '../../services/product-filter.service';

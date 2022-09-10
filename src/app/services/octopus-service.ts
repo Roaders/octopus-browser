@@ -1,8 +1,9 @@
 import { Injectable } from '@morgan-stanley/needle';
 import { firstValueFrom, from, mergeMap, Observable, shareReplay } from 'rxjs';
-import { PRODUCTS_URI, PRODUCT_URI } from '../constants';
-import { IProduct, IProductsResponse } from '../contracts';
 import * as format from 'string-template';
+
+import { PRODUCT_URI, PRODUCTS_URI } from '../constants';
+import { IProduct, IProductsResponse } from '../contracts';
 
 @Injectable()
 export class OctopusService {
