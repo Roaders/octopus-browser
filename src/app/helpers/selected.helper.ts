@@ -3,22 +3,15 @@ import { Injectable } from '@morgan-stanley/needle';
 
 @Injectable()
 export class SelectedItemHelperFactory {
-    public create<T>(
-        selectedText: ItemSelectedButtonTextFunction<T>,
-        nonSelectedText: NoSelectionButtonTextFunction<T>
-    ): SelectedItemHelper<T> {
-        return new SelectedItemHelper<T>(selectedText, nonSelectedText);
+    public create<T>(displayFunction: ItemDisplayFunctionFunction<T>): SelectedItemHelper<T> {
+        return new SelectedItemHelper<T>(displayFunction);
     }
 }
 
-type ItemSelectedButtonTextFunction<T> = (item: T, helper: SelectedItemHelper<T>) => string;
-type NoSelectionButtonTextFunction<T> = (helper: SelectedItemHelper<T>) => string;
+type ItemDisplayFunctionFunction<T> = (item: T | undefined) => string;
 
 export class SelectedItemHelper<T> {
-    constructor(
-        public readonly selectedText: ItemSelectedButtonTextFunction<T>,
-        public readonly nonSelectedText: NoSelectionButtonTextFunction<T>
-    ) {}
+    constructor(private displayFunction: ItemDisplayFunctionFunction<T>) {}
 
     public readonly itemChange = new EventEmitter<T | undefined>();
 
@@ -38,6 +31,10 @@ export class SelectedItemHelper<T> {
         } else {
             this._selectedItem = undefined;
         }
+    }
+
+    public getDisplayString(item?: T): string {
+        return this.displayFunction(item);
     }
 
     private _loading = false;
@@ -74,6 +71,6 @@ export class SelectedItemHelper<T> {
     }
 
     public get buttonText(): string {
-        return this._selectedItem != null ? this.selectedText(this._selectedItem, this) : this.nonSelectedText(this);
+        return this.displayFunction(this._selectedItem);
     }
 }

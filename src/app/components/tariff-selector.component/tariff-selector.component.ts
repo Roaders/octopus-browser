@@ -16,29 +16,23 @@ export class TariffSelectorComponent implements OnInit {
         private octopusService: OctopusService,
         selectedItemFactory: SelectedItemHelperFactory
     ) {
-        this.productSelector = selectedItemFactory.create(
-            (product) => product.full_name,
-            (helper) => `Select Product (${helper.items?.length ?? 0})`
+        this.productSelector = selectedItemFactory.create((product) =>
+            product != null ? product.full_name : `Select Product (${this.productSelector.items?.length ?? 0})`
         );
         this.productChange = this.productSelector.itemChange;
         this.productChange.subscribe({ next: (product: IProduct | undefined) => this.onProductSelected(product) });
 
-        this.registerSelector = selectedItemFactory.create(
-            (register) => this.registerDisplayValue(register),
-            () => 'Select Register'
+        this.registerSelector = selectedItemFactory.create((register) =>
+            register != null ? this.registerDisplayValue(register) : 'Select Register'
         );
 
-        this.regionSelector = selectedItemFactory.create(
-            (region) => region.name,
-            () => 'Select Region'
-        );
+        this.regionSelector = selectedItemFactory.create((region) => (region != null ? region.name : 'Select Region'));
         this.regionSelector.itemChange.subscribe({
             next: (region: IRegion | undefined) => this.onRegionSelected(region),
         });
 
-        this.billingSelector = selectedItemFactory.create(
-            (billing) => this.billingDisplayValue(billing),
-            () => 'Select Billing Type'
+        this.billingSelector = selectedItemFactory.create((billing) =>
+            billing != null ? this.billingDisplayValue(billing) : 'Select Billing Type'
         );
     }
 

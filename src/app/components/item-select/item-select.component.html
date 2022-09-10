@@ -4,8 +4,7 @@
             [disabled]="selectionHelper.selectionDisabled">{{selectionHelper.buttonText}}</button>
         <div ngbDropdownMenu aria-labelledby="selectionDropdown">
             <button ngbDropdownItem *ngFor="let item of selectionHelper.items"
-                (click)="selectionHelper.selectItem(item)">{{selectionHelper.selectedText(item,
-                selectionHelper)}}</button>
+                (click)="selectionHelper.selectItem(item)">{{selectionHelper.getDisplayString(item)}}</button>
         </div>
     </div>
 
