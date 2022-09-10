@@ -46,6 +46,25 @@ export class ProductFilterComponent implements OnInit {
     }
 
     public filterDisplayString(key: CheckboxKey): string {
-        return this.productsService.filterDisplayString(key);
+        switch (key) {
+            case 'business':
+                return 'Business';
+            case 'export':
+                return 'Export';
+            case 'green':
+                return 'Green';
+            case 'import':
+                return 'Import';
+            case 'prepay':
+                return 'Pre Pay';
+            case 'restricted':
+                return 'Restricted';
+            case 'tracker':
+                return 'Tracker';
+            case 'variable':
+                return 'Variable';
+            default:
+                return key;
+        }
     }
 }

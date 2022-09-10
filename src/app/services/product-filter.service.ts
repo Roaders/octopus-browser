@@ -1,4 +1,5 @@
 import { Injectable } from '@morgan-stanley/needle';
+import { Observable, ReplaySubject } from 'rxjs';
 
 import { CheckboxKey, checkboxKeys } from '../constants';
 import { IProduct } from '../contracts';
@@ -29,40 +30,21 @@ export class ProductFilterService {
         return this._brands;
     }
 
+    private _productsSubject = new ReplaySubject<IProduct[] | undefined>(1);
+
     constructor(private octopusService: OctopusService) {
         this.reset();
     }
 
-    public filterDisplayString(key: CheckboxKey): string {
-        switch (key) {
-            case 'business':
-                return 'Business';
-            case 'export':
-                return 'Export';
-            case 'green':
-                return 'Green';
-            case 'import':
-                return 'Import';
-            case 'prepay':
-                return 'Pre Pay';
-            case 'restricted':
-                return 'Restricted';
-            case 'tracker':
-                return 'Tracker';
-            case 'variable':
-                return 'Variable';
-            default:
-                return key;
-        }
-    }
-
-    public initialise() {
+    public initialise(): Observable<IProduct[] | undefined> {
         if (this.initialised) {
-            return;
+            return this._productsSubject;
         }
 
         this.initialised = true;
         this.loadProducts();
+
+        return this._productsSubject;
     }
 
     public toggleFilter(key: CheckboxKey) {
@@ -144,5 +126,7 @@ export class ProductFilterService {
                     (selectedBrands.length === 0 || selectedBrands.includes(product.brand))
             )
             .sort((a, b) => a.full_name.localeCompare(b.full_name));
+
+        this._productsSubject.next(this._filteredProducts);
     }
 }

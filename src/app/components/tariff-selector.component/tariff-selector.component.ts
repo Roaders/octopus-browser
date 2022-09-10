@@ -1,6 +1,7 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, OnInit, Output } from '@angular/core';
 
 import { IProduct, IRegion } from '../../contracts';
+import { SelectedItemHelper, SelectedItemHelperFactory } from '../../helpers/selected.helper';
 import { OctopusService } from '../../services';
 import { ProductFilterService } from '../../services/product-filter.service';
 
@@ -9,59 +10,35 @@ import { ProductFilterService } from '../../services/product-filter.service';
     templateUrl: './tariff-selector.component.html',
 })
 export class TariffSelectorComponent implements OnInit {
-    constructor(private productsService: ProductFilterService, private octopusService: OctopusService) {}
+    constructor(
+        private productsService: ProductFilterService,
+        private octopusService: OctopusService,
+        selectedItemFactory: SelectedItemHelperFactory
+    ) {
+        this.productSelector = selectedItemFactory.create(
+            (product) => product.full_name,
+            (helper) => `Select Product (${helper.items?.length ?? 0})`
+        );
+        this.productChange = this.productSelector.itemChange;
 
-    private _regions: IRegion[] | undefined;
-
-    public get regions(): IRegion[] | undefined {
-        return this._regions;
+        this.regionSelector = selectedItemFactory.create(
+            (region) => region.name,
+            () => 'Select Region'
+        );
     }
 
-    private _selectedRegion: IRegion | undefined;
-
-    public get selectedRegion(): IRegion | undefined {
-        return this._selectedRegion;
-    }
+    public readonly productSelector: SelectedItemHelper<IProduct>;
+    public readonly regionSelector: SelectedItemHelper<IRegion>;
 
     @Output()
-    public readonly productChange = new EventEmitter<IProduct | undefined>();
-
-    private _selectedProduct: IProduct | undefined;
-
-    public get selectedProduct(): IProduct | undefined {
-        return this._selectedProduct;
-    }
-
-    public get selectProductButtonText(): string {
-        return this._selectedProduct != null
-            ? this._selectedProduct.full_name
-            : `Select Product (${this.products?.length})`;
-    }
-
-    public get selectRegionButtonText(): string {
-        return this._selectedRegion != null ? this._selectedRegion.name : `Select Region`;
-    }
+    public readonly productChange;
 
     ngOnInit(): void {
-        this.productsService.initialise();
+        this.productsService.initialise().subscribe({ next: (products) => (this.productSelector.items = products) });
         this.loadRegions();
     }
 
-    public selectProduct(product?: IProduct) {
-        this._selectedProduct = product;
-
-        this.productChange.emit(product);
-    }
-
-    public selectRegion(region?: IRegion) {
-        this._selectedRegion = region;
-    }
-
-    public get products(): IProduct[] | undefined {
-        return this.productsService.products;
-    }
-
     private async loadRegions() {
-        this._regions = await this.octopusService.getRegionsAsync();
+        this.regionSelector.items = await this.octopusService.getRegionsAsync();
     }
 }

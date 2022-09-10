@@ -1,18 +1,18 @@
 <div class="py-2 d-flex flex-row">
     <div class="pe-2">
         <div ngbDropdown class="d-inline-block">
-            <button type="button" class="btn btn-outline-primary" id="productSelectionDropdown" ngbDropdownToggle>{{selectProductButtonText}}</button>
+            <button type="button" class="btn btn-outline-primary" id="productSelectionDropdown" ngbDropdownToggle>{{productSelector.buttonText}}</button>
             <div ngbDropdownMenu aria-labelledby="productSelectionDropdown">
-                <button ngbDropdownItem *ngFor="let product of products" (click)="selectProduct(product)">{{product.full_name}}</button>
+                <button ngbDropdownItem *ngFor="let product of productSelector.items" (click)="productSelector.selectItem(product)">{{product.full_name}}</button>
             </div>
         </div>
     </div>
 
-    <div *ngIf="selectedProduct!= null && regions != null" class="pe-2">
+    <div *ngIf="productSelector.selectedItem != null && regionSelector.items != null" class="pe-2">
         <div ngbDropdown class="d-inline-block">
-            <button type="button" class="btn btn-outline-primary" id="regionSelectionDropdown" ngbDropdownToggle>{{selectRegionButtonText}}</button>
+            <button type="button" class="btn btn-outline-primary" id="regionSelectionDropdown" ngbDropdownToggle>{{regionSelector.buttonText}}</button>
             <div ngbDropdownMenu aria-labelledby="regionSelectionDropdown">
-                <button ngbDropdownItem *ngFor="let region of regions" (click)="selectRegion(region)">{{region.name}}</button>
+                <button ngbDropdownItem *ngFor="let region of regionSelector.items" (click)="regionSelector.selectItem(region)">{{region.name}}</button>
             </div>
         </div>
     </div>
