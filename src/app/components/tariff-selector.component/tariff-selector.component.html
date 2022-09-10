@@ -15,7 +15,7 @@
         <div *ngIf="!registerSelector.loading" ngbDropdown class="d-inline-block">
             <button type="button" class="btn btn-outline-primary" id="registerSelectionDropdown" ngbDropdownToggle>{{registerSelector.buttonText}}</button>
             <div ngbDropdownMenu aria-labelledby="registerSelectionDropdown">
-                <button ngbDropdownItem *ngFor="let register of registerSelector.items" (click)="registerSelector.selectItem(register)">{{register.code}}</button>
+                <button ngbDropdownItem *ngFor="let register of registerSelector.items" (click)="registerSelector.selectItem(register)">{{registerDisplayValue(register)}}</button>
             </div>
         </div>
         <div *ngIf="registerSelector.loading">

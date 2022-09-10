@@ -24,7 +24,7 @@ export class TariffSelectorComponent implements OnInit {
         this.productChange.subscribe({ next: (product: IProduct | undefined) => this.onProductSelected(product) });
 
         this.registerSelector = selectedItemFactory.create(
-            (register) => register.code,
+            (register) => this.registerDisplayValue(register),
             () => 'Select Register'
         );
 
@@ -46,6 +46,19 @@ export class TariffSelectorComponent implements OnInit {
     ngOnInit(): void {
         this.productsService.initialise().subscribe({ next: (products) => (this.productSelector.items = products) });
         this.loadRegions();
+    }
+
+    public registerDisplayValue(register: IRegister): string {
+        switch (register.code) {
+            case 'dual_register_electricity_tariffs':
+                return 'Dual Fuel';
+            case 'single_register_electricity_tariffs':
+                return 'Electric';
+            case 'single_register_gas_tariffs':
+                return 'Gas';
+            default:
+                return register.code;
+        }
     }
 
     private async loadRegions() {

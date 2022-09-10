@@ -22,7 +22,19 @@ export class SelectedItemHelper<T> {
 
     public readonly itemChange = new EventEmitter<T | undefined>();
 
-    public items: T[] | undefined;
+    private _items: T[] | undefined;
+
+    public get items(): T[] | undefined {
+        return this._items;
+    }
+
+    public set items(value: T[] | undefined) {
+        this._items = value;
+
+        if (this._items?.length === 1) {
+            this._selectedItem = this._items[0];
+        }
+    }
 
     private _loading = false;
 
@@ -41,6 +53,7 @@ export class SelectedItemHelper<T> {
     }
 
     public async loadItems(promise: Promise<T[]>): Promise<T[]> {
+        this._selectedItem = undefined;
         this._loading = true;
 
         this.items = await promise;
