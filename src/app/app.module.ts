@@ -5,6 +5,8 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { AppComponent } from './components/app/app.component';
 import { ItemSelectComponent } from './components/item-select/item-select.component';
 import { ProductFilterComponent } from './components/product-filter/product-filter.component';
+import { SelectedProductComponent } from './components/selected-product/selected-product.component';
+import { SelectedTariffComponent } from './components/selected-tariff/selected-tariff.component';
 import { TariffBrowserComponent } from './components/tariff-browser/tariff-browser.component';
 import { TariffSelectorComponent } from './components/tariff-selector.component/tariff-selector.component';
 
@@ -15,6 +17,8 @@ import { TariffSelectorComponent } from './components/tariff-selector.component/
         ProductFilterComponent,
         TariffSelectorComponent,
         ItemSelectComponent,
+        SelectedProductComponent,
+        SelectedTariffComponent,
     ],
     imports: [BrowserModule, NgbModule],
     providers: [],

@@ -1,4 +1,4 @@
-import { Component, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { firstValueFrom, from, map, shareReplay } from 'rxjs';
 
 import { IBillingType, IProduct, IProductDetail, IRegion, IRegister } from '../../contracts';
@@ -25,15 +25,18 @@ export class TariffSelectorComponent implements OnInit {
         this.registerSelector = selectedItemFactory.create((register) =>
             register != null ? this.registerDisplayValue(register) : 'Select Register'
         );
+        this.registerChange = this.registerSelector.itemChange;
 
         this.regionSelector = selectedItemFactory.create((region) => (region != null ? region.name : 'Select Region'));
         this.regionSelector.itemChange.subscribe({
             next: (region: IRegion | undefined) => this.onRegionSelected(region),
         });
+        this.regionChange = this.regionSelector.itemChange;
 
         this.billingSelector = selectedItemFactory.create((billing) =>
             billing != null ? this.billingDisplayValue(billing) : 'Select Billing Type'
         );
+        this.billingTypeChange = this.billingSelector.itemChange;
     }
 
     private _productDetail: IProductDetail | undefined;
@@ -44,7 +47,16 @@ export class TariffSelectorComponent implements OnInit {
     public readonly billingSelector: SelectedItemHelper<IBillingType>;
 
     @Output()
-    public readonly productChange;
+    public readonly productChange: EventEmitter<IProduct | undefined>;
+
+    @Output()
+    public readonly registerChange: EventEmitter<IRegister | undefined>;
+
+    @Output()
+    public readonly regionChange: EventEmitter<IRegion | undefined>;
+
+    @Output()
+    public readonly billingTypeChange: EventEmitter<IBillingType | undefined>;
 
     ngOnInit(): void {
         this.productsService.productsUpdates.subscribe({
@@ -85,6 +97,9 @@ export class TariffSelectorComponent implements OnInit {
 
     private onProductSelected(product: IProduct | undefined) {
         this._productDetail = undefined;
+        this.registerSelector.selectItem(undefined);
+        this.regionSelector.selectItem(undefined);
+        this.billingSelector.selectItem(undefined);
 
         if (product == null) {
             this.regionSelector.items = undefined;
@@ -100,6 +115,8 @@ export class TariffSelectorComponent implements OnInit {
     }
 
     private onRegionSelected(region: IRegion | undefined) {
+        this.billingSelector.selectItem(undefined);
+
         const registerCode = this.registerSelector.selectedItem?.code;
         const register = registerCode != null ? this._productDetail?.[registerCode] : undefined;
         const regionCode = region?.code;

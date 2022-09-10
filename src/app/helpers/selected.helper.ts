@@ -25,11 +25,9 @@ export class SelectedItemHelper<T> {
         this._items = value;
 
         if (this._items?.length === 1) {
-            this._selectedItem = this._items[0];
-        } else if (this._items != null && this._selectedItem != null) {
-            this._selectedItem = this._items.includes(this._selectedItem) ? this._selectedItem : undefined;
-        } else {
-            this._selectedItem = undefined;
+            this.selectItem(this._items[0]);
+        } else if (this._selectedItem != null && this._items?.includes(this._selectedItem) === false) {
+            this.selectItem(undefined);
         }
     }
 
@@ -54,6 +52,7 @@ export class SelectedItemHelper<T> {
     }
 
     public async loadItems(promise: Promise<T[]>): Promise<T[]> {
+        this.selectItem(undefined);
         this._selectedItem = undefined;
         this._loading = true;
 

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { IProduct } from '../../contracts';
+import { IBillingType, IProduct, ITariff } from '../../contracts';
 import { OctopusService } from '../../services';
 import { ProductFilterService } from '../../services/product-filter.service';
 
@@ -15,7 +15,23 @@ export class TariffBrowserComponent implements OnInit {
         this.productsService.initialise();
     }
 
+    private _product: IProduct | undefined;
+
+    public get product(): IProduct | undefined {
+        return this._product;
+    }
+
     public async onProductSelected(product?: IProduct) {
-        console.log(`onProductSelected`, product?.code);
+        this._product = product;
+    }
+
+    private _tariff: ITariff | undefined;
+
+    public get tariff(): ITariff | undefined {
+        return this._tariff;
+    }
+
+    public async onBillingSelected(billing?: IBillingType) {
+        this._tariff = billing?.tariff;
     }
 }

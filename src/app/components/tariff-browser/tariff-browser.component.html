@@ -3,7 +3,12 @@
     <div>
         <h2>Select Tariff</h2>
         <product-filter></product-filter>
-        <tariff-selector (productChange)="onProductSelected($event)"></tariff-selector>
+        <tariff-selector (productChange)="onProductSelected($event)" (billingTypeChange)="onBillingSelected($event)"></tariff-selector>
+    </div>
+
+    <div class="d-flex">
+        <selected-product class="flex-grow-1" [product]="product"></selected-product>
+        <selected-tariff class="flex-grow-1" [tariff]="tariff"></selected-tariff>
     </div>
 
 </div>

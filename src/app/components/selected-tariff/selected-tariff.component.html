@@ -1,0 +1,39 @@
+<div *ngIf="tariff != null" class="p-2">
+    <h3>Tariff</h3>
+
+    <table class="table">
+
+        <tr>
+            <td class="label-cell">Code</td>
+            <td>{{tariff.code}}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Unit Rate*</td>
+            <td>{{tariff.standard_unit_rate_exc_vat}}p/kWh ({{tariff.standard_unit_rate_inc_vat}} inc vat.)</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Standing Charge</td>
+            <td>{{tariff.standing_charge_exc_vat}}p/day ({{tariff.standing_charge_inc_vat}} inc vat.)</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Online Discount</td>
+            <td>{{tariff.online_discount_exc_vat}} ({{tariff.online_discount_inc_vat}} inc vat.)</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Dual Fuel Discount</td>
+            <td>{{tariff.dual_fuel_discount_exc_vat}} ({{tariff.dual_fuel_discount_inc_vat}} inc vat.)</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Exit Fees Discount</td>
+            <td>{{tariff.exit_fees_exc_vat}} ({{tariff.exit_fees_inc_vat}} inc vat.)</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Exit Fees Type</td>
+            <td>{{tariff.exit_fees_type}}</td>
+        </tr>
+
+    </table>
+
+    <div>* this rate is usually the overnight tariff for smart products such as Octopus Go</div>
+
+</div>

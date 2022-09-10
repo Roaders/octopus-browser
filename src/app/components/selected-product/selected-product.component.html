@@ -1,0 +1,62 @@
+<div *ngIf="product != null" class="p-2">
+    <h3>{{product.display_name}}</h3>
+
+    <table class="table">
+
+        <tr>
+            <td class="label-cell">Full Name</td>
+            <td>{{product.full_name}}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Code</td>
+            <td>{{product.code}}</td>
+        </tr>
+
+        <tr>
+            <td class="label-cell">Description</td>
+            <td>{{product.description}}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Variable</td>
+            <td>{{product.is_variable}}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Green</td>
+            <td>{{product.is_green}}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Tracker</td>
+            <td>{{product.is_tracker}}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Prepay</td>
+            <td>{{product.is_prepay}}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Business</td>
+            <td>{{product.is_business}}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Restricted</td>
+            <td>{{product.is_restricted}}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Term</td>
+            <td>{{product.term}}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Brand</td>
+            <td>{{product.brand}}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Available From</td>
+            <td>{{product.available_from}}</td>
+        </tr>
+        <tr>
+            <td class="label-cell">Available To</td>
+            <td class="label-cell">{{product.available_to}}</td>
+        </tr>
+
+    </table>
+
+</div>
