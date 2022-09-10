@@ -15,12 +15,14 @@ export class TariffBrowserComponent implements OnInit {
         this.productsService.initialise();
     }
 
-    public async selectProduct(product: IProduct) {
-        console.log(product);
+    public async onProductSelected(product?: IProduct) {
+        console.log(`onProductSelected`, product);
 
-        const fullProduct = await this.octopusService.getProductAsync(product.code);
+        if (product != null) {
+            const fullProduct = await this.octopusService.getProductAsync(product.code);
 
-        console.log(fullProduct);
+            console.log(fullProduct);
+        }
     }
 
     public get products(): IProduct[] | undefined {

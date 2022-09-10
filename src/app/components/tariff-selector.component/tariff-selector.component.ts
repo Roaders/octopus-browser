@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 
 import { IProduct, IRegion } from '../../contracts';
 import { OctopusService } from '../../services';
@@ -23,9 +23,10 @@ export class TariffSelectorComponent implements OnInit {
         return this._selectedRegion;
     }
 
-    private _selectedProduct: IProduct | undefined;
+    @Output()
+    public readonly productChange = new EventEmitter<IProduct | undefined>();
 
-    public readonly productChangeEvent = new EventEmitter<IProduct>();
+    private _selectedProduct: IProduct | undefined;
 
     public get selectedProduct(): IProduct | undefined {
         return this._selectedProduct;
@@ -48,6 +49,8 @@ export class TariffSelectorComponent implements OnInit {
 
     public selectProduct(product?: IProduct) {
         this._selectedProduct = product;
+
+        this.productChange.emit(product);
     }
 
     public selectRegion(region?: IRegion) {

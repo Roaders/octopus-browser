@@ -1,11 +1,9 @@
 <div>
 
-
     <div>
         <h2>Select Tariff</h2>
         <product-filter></product-filter>
-        <tariff-selector></tariff-selector>
+        <tariff-selector (productChange)="onProductSelected($event)"></tariff-selector>
     </div>
-
 
 </div>
