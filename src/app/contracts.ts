@@ -59,6 +59,7 @@ export interface IBillingType {
 export interface IBillingTypes {
     direct_debit_monthly: ITariff;
     direct_debit_quarterly: ITariff;
+    prepayment: ITariff;
 }
 
 export type TariffBillingRecord = Partial<IBillingTypes>;

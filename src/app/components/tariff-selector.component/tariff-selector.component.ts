@@ -27,6 +27,12 @@ export class TariffSelectorComponent implements OnInit {
             register != null ? this.registerDisplayValue(register) : 'Select Register'
         );
         this.registerChange = this.registerSelector.itemChange;
+        this.registerSelector.itemChange.subscribe({
+            next: () => {
+                this.regionSelector.selectItem(undefined);
+                this.billingSelector.selectItem(undefined);
+            },
+        });
 
         this.regionSelector = selectedItemFactory.create((region) => (region != null ? region.name : 'Select Region'));
         this.regionSelector.itemChange.subscribe({
@@ -87,6 +93,8 @@ export class TariffSelectorComponent implements OnInit {
                 return 'Monthly DD';
             case 'direct_debit_quarterly':
                 return 'Quarterly DD';
+            case 'prepayment':
+                return 'Pre Payment';
             default:
                 return register.type;
         }
@@ -104,7 +112,6 @@ export class TariffSelectorComponent implements OnInit {
         this.billingSelector.selectItem(undefined);
 
         if (product == null) {
-            this.regionSelector.items = undefined;
             return;
         }
 

@@ -8,12 +8,12 @@ export function isITariff(value: unknown): value is ITariff {
 
 export function isIBillingTypes(value: unknown): value is IBillingTypes {
     const types = value as IBillingTypes;
-    return isObject(types) && (isITariff(types.direct_debit_monthly) || isITariff(types.direct_debit_quarterly));
+    return isObject(types) && Object.values(types).some(isITariff);
 }
 
 export function isTariffRegisterRecord(value: unknown): value is TariffRegisterRecord {
     const register = value as TariffRegisterRecord;
-    return isObject(register) && Regions.every((region) => isIBillingTypes(register[`_${region.code}`]));
+    return isObject(register) && Regions.some((region) => isIBillingTypes(register[`_${region.code}`]));
 }
 
 export function isIRegister(value: unknown): value is IRegister {
