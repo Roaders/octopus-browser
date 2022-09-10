@@ -18,8 +18,4 @@ export class TariffBrowserComponent implements OnInit {
     public async onProductSelected(product?: IProduct) {
         console.log(`onProductSelected`, product?.code);
     }
-
-    public get products(): IProduct[] | undefined {
-        return this.productsService.products;
-    }
 }

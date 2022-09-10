@@ -33,6 +33,10 @@ export class SelectedItemHelper<T> {
 
         if (this._items?.length === 1) {
             this._selectedItem = this._items[0];
+        } else if (this._items != null && this._selectedItem != null) {
+            this._selectedItem = this._items.includes(this._selectedItem) ? this._selectedItem : undefined;
+        } else {
+            this._selectedItem = undefined;
         }
     }
 

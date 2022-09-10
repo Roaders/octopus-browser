@@ -1,5 +1,5 @@
 import { Injectable } from '@morgan-stanley/needle';
-import { Observable, ReplaySubject } from 'rxjs';
+import { filter, from, map, Observable, ReplaySubject, shareReplay, tap } from 'rxjs';
 
 import { CheckboxKey, checkboxKeys } from '../constants';
 import { IProduct } from '../contracts';
@@ -7,7 +7,7 @@ import { OctopusService } from './octopus-service';
 
 @Injectable()
 export class ProductFilterService {
-    private initialised = false;
+    private _productsStream: Observable<IProduct[]> | undefined;
 
     private _filters: Partial<Record<CheckboxKey, boolean>> = {};
     private _checkedBrands: Partial<Record<string, boolean>> = {};
@@ -36,15 +36,16 @@ export class ProductFilterService {
         this.reset();
     }
 
-    public initialise(): Observable<IProduct[] | undefined> {
-        if (this.initialised) {
-            return this._productsSubject;
+    public get productsUpdates(): Observable<IProduct[] | undefined> {
+        return this._productsSubject.asObservable();
+    }
+
+    public initialise(): Observable<IProduct[]> {
+        if (this._productsStream != null) {
+            return this._productsStream;
         }
 
-        this.initialised = true;
-        this.loadProducts();
-
-        return this._productsSubject;
+        return this.loadProducts();
     }
 
     public toggleFilter(key: CheckboxKey) {
@@ -67,16 +68,24 @@ export class ProductFilterService {
         return this._checkedBrands[brand] || false;
     }
 
-    private async loadProducts(): Promise<void> {
+    private loadProducts(): Observable<IProduct[]> {
         this.reset();
-        const products = (await this.octopusService.getProductsAsync()).results;
+        const stream = (this._productsStream = from(this.octopusService.getProductsAsync()).pipe(
+            map((response) => response.results),
+            map((products) => {
+                this._products = products;
 
-        this.updateBrands(products);
-        this.updateCheckboxes(products);
+                this.updateBrands(products);
+                this.updateCheckboxes(products);
 
-        this._products = products;
+                return this.filterProducts();
+            }),
+            shareReplay()
+        ));
 
-        this.filterProducts();
+        stream.subscribe();
+
+        return stream;
     }
 
     public reset(): void {
@@ -106,13 +115,15 @@ export class ProductFilterService {
         );
     }
 
-    private filterProducts() {
+    private filterProducts(): IProduct[] {
         const selectedBrands = Object.entries(this._checkedBrands)
             .filter((values) => values[1] === true)
             .map(([key]) => key);
 
-        this._filteredProducts = this._products
-            ?.filter(
+        const products = this._products ?? [];
+
+        const filtered = products
+            .filter(
                 (product) =>
                     (Object.values(this._filters).every((filterValue) => !filterValue) ||
                         (this.isChecked('business') && product.is_business) ||
@@ -127,6 +138,9 @@ export class ProductFilterService {
             )
             .sort((a, b) => a.full_name.localeCompare(b.full_name));
 
-        this._productsSubject.next(this._filteredProducts);
+        this._filteredProducts = filtered;
+        this._productsSubject.next(filtered);
+
+        return filtered;
     }
 }

@@ -53,7 +53,11 @@ export class TariffSelectorComponent implements OnInit {
     public readonly productChange;
 
     ngOnInit(): void {
-        this.productsService.initialise().subscribe({ next: (products) => (this.productSelector.items = products) });
+        this.productsService.productsUpdates.subscribe({
+            next: (products) => (this.productSelector.items = products),
+        });
+        this.productSelector.loadItems(firstValueFrom(this.productsService.initialise()));
+
         this.loadRegions();
     }
 
