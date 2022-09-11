@@ -10,4 +10,6 @@
         <selected-tariff class="col-xl" [tariff]="tariff"></selected-tariff>
     </div>
 
+    <tariff-comparison *ngIf="tariffs.length > 0" [tariffs]="tariffs"></tariff-comparison>
+
 </div>

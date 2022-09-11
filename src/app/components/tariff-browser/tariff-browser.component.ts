@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 
-import { IBillingType, IProductDetail, ITariff } from '../../contracts';
+import { IBillingType, IProductDetail, ITariff, TariffWithProduct } from '../../contracts';
 import { OctopusService } from '../../services';
 import { ProductFilterService } from '../../services/product-filter.service';
 
@@ -31,7 +31,15 @@ export class TariffBrowserComponent implements OnInit {
         return this._tariff;
     }
 
+    private _tariffs: TariffWithProduct[] = [];
+
+    public get tariffs(): TariffWithProduct[] {
+        return this._tariffs;
+    }
+
     public async onBillingSelected(billing?: IBillingType) {
         this._tariff = billing?.tariff;
+        this._tariffs =
+            this._tariff != null && this._product != null ? [{ tariff: this._tariff, product: this._product }] : [];
     }
 }

@@ -8,6 +8,7 @@ import { ProductFilterComponent } from './components/product-filter/product-filt
 import { SelectedProductComponent } from './components/selected-product/selected-product.component';
 import { SelectedTariffComponent } from './components/selected-tariff/selected-tariff.component';
 import { TariffBrowserComponent } from './components/tariff-browser/tariff-browser.component';
+import { TariffComparisonComponent } from './components/tariff-comparison/tariff-comparison.component';
 import { TariffSelectorComponent } from './components/tariff-selector.component/tariff-selector.component';
 import { BrandNamePipe } from './pipes/brand-name.pipe';
 import { YesNoPipe } from './pipes/yes-no.pipe';
@@ -23,6 +24,7 @@ import { YesNoPipe } from './pipes/yes-no.pipe';
         SelectedTariffComponent,
         YesNoPipe,
         BrandNamePipe,
+        TariffComparisonComponent,
     ],
     imports: [BrowserModule, NgbModule],
     providers: [],

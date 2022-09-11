@@ -1,0 +1,17 @@
+<div>
+    <h3>Tariff Comparison</h3>
+
+    <div *ngFor="let tariffAndProduct of tariffs">
+        <div>{{tariffAndProduct.tariff.code}}</div>
+
+        <div class="row">
+            <div *ngFor="let link of tariffAndProduct.tariff.links" class="col">
+                <div>{{link.rel}}</div>
+
+                <ul>
+                    <li *ngFor="let charge of getValues(tariffAndProduct.tariff.code, link.rel)">{{charge.value_inc_vat}}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

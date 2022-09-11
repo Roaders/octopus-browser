@@ -71,7 +71,6 @@ export class ProductFilterService {
     private loadProducts(): Observable<IProduct[]> {
         this.reset();
         const stream = (this._productsStream = from(this.octopusService.getProductsAsync()).pipe(
-            map((response) => response.results),
             map((products) => {
                 this._products = products;
 

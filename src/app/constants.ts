@@ -2,6 +2,7 @@ import { IRegion } from './contracts';
 
 export const PRODUCTS_URI = `https://api.octopus.energy/v1/products`;
 export const PRODUCT_URI = `https://api.octopus.energy/v1/products/{code}/`;
+export const CHARGES_URI = `https://api.octopus.energy/v1/products/{productCode}/{register}/{tariffCode}/{chargeType}/`;
 
 export const checkboxKeys = [
     'variable',
