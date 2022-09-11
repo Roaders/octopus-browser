@@ -16,16 +16,17 @@ export class TariffSelectorComponent implements OnInit {
         private octopusService: OctopusService,
         selectedItemFactory: SelectedItemHelperFactory
     ) {
-        this.productSelector = selectedItemFactory.create((product) =>
-            product != null ? product.full_name : `Select Product (${this.productSelector.items?.length ?? 0})`
-        );
+        this.productSelector = selectedItemFactory.create({
+            displayFunction: (product) =>
+                product != null ? product.full_name : `Select Product (${this.productSelector.items?.length ?? 0})`,
+        });
         this.productSelector.itemChange.subscribe({
             next: (product: IProduct | undefined) => this.onProductSelected(product),
         });
 
-        this.registerSelector = selectedItemFactory.create((register) =>
-            register != null ? this.registerDisplayValue(register) : 'Select Register'
-        );
+        this.registerSelector = selectedItemFactory.create({
+            displayFunction: (register) => (register != null ? this.registerDisplayValue(register) : 'Select Register'),
+        });
         this.registerChange = this.registerSelector.itemChange;
         this.registerSelector.itemChange.subscribe({
             next: () => {
@@ -34,15 +35,17 @@ export class TariffSelectorComponent implements OnInit {
             },
         });
 
-        this.regionSelector = selectedItemFactory.create((region) => (region != null ? region.name : 'Select Region'));
+        this.regionSelector = selectedItemFactory.create({
+            displayFunction: (region) => (region != null ? region.name : 'Select Region'),
+        });
         this.regionSelector.itemChange.subscribe({
             next: (region: IRegion | undefined) => this.onRegionSelected(region),
         });
         this.regionChange = this.regionSelector.itemChange;
 
-        this.billingSelector = selectedItemFactory.create((billing) =>
-            billing != null ? this.billingDisplayValue(billing) : 'Select Billing Type'
-        );
+        this.billingSelector = selectedItemFactory.create({
+            displayFunction: (billing) => (billing != null ? this.billingDisplayValue(billing) : 'Select Billing Type'),
+        });
         this.billingTypeChange = this.billingSelector.itemChange;
     }
 

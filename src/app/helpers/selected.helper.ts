@@ -1,17 +1,21 @@
 import { EventEmitter } from '@angular/core';
 import { Injectable } from '@morgan-stanley/needle';
 
+type ItemDisplayFunctionFunction<T> = (item: T | undefined) => string;
+
+export type SelectedItemHelperConfig<T> = {
+    displayFunction: ItemDisplayFunctionFunction<T>;
+};
+
 @Injectable()
 export class SelectedItemHelperFactory {
-    public create<T>(displayFunction: ItemDisplayFunctionFunction<T>): SelectedItemHelper<T> {
-        return new SelectedItemHelper<T>(displayFunction);
+    public create<T>(config: SelectedItemHelperConfig<T>): SelectedItemHelper<T> {
+        return new SelectedItemHelper<T>(config);
     }
 }
 
-type ItemDisplayFunctionFunction<T> = (item: T | undefined) => string;
-
 export class SelectedItemHelper<T> {
-    constructor(private displayFunction: ItemDisplayFunctionFunction<T>) {}
+    constructor(private config: SelectedItemHelperConfig<T>) {}
 
     public readonly itemChange = new EventEmitter<T | undefined>();
 
@@ -32,7 +36,7 @@ export class SelectedItemHelper<T> {
     }
 
     public getDisplayString(item?: T): string {
-        return this.displayFunction(item);
+        return this.config.displayFunction(item);
     }
 
     private _loading = false;
@@ -70,6 +74,6 @@ export class SelectedItemHelper<T> {
     }
 
     public get buttonText(): string {
-        return this.displayFunction(this._selectedItem);
+        return this.config.displayFunction(this._selectedItem);
     }
 }
