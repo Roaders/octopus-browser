@@ -174,7 +174,6 @@ export class TariffSelectorComponent implements OnInit {
         if (urlParams != window.location.search) {
             const url = new URL(window.location.href);
             url.searchParams.set('tariff', values);
-            console.log(`update url`, { url: url.toString(), values });
 
             window.history.pushState({}, '', url);
         }

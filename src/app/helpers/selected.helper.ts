@@ -51,7 +51,7 @@ export class SelectedItemHelper<T> {
     public set items(value: T[] | undefined) {
         this._items = value;
 
-        if (this._items?.length === 1) {
+        if (this._items?.length === 1 && this._selectedItem == null) {
             this.selectItem(this._items[0]);
         } else if (this._items == null) {
             this.selectItem(undefined);
@@ -77,7 +77,7 @@ export class SelectedItemHelper<T> {
     }
 
     public get selectionDisabled(): boolean {
-        return this._items?.length === 1 && this.selectItem != null;
+        return this._items?.length === 1 && this._selectedItem != null && this._items.includes(this._selectedItem);
     }
 
     public async loadItems(promise: Promise<T[]>): Promise<T[]> {
