@@ -19,6 +19,8 @@ export class TariffSelectorComponent implements OnInit {
         this.productSelector = selectedItemFactory.create({
             displayFunction: (product) =>
                 product != null ? product.full_name : `Select Product (${this.productSelector.items?.length ?? 0})`,
+            propertyKey: 'code',
+            valueIndex: 0,
         });
         this.productSelector.itemChange.subscribe({
             next: (product: IProduct | undefined) => this.onProductSelected(product),
@@ -26,17 +28,18 @@ export class TariffSelectorComponent implements OnInit {
 
         this.registerSelector = selectedItemFactory.create({
             displayFunction: (register) => (register != null ? this.registerDisplayValue(register) : 'Select Register'),
+            propertyKey: 'code',
+            valueIndex: 1,
         });
         this.registerChange = this.registerSelector.itemChange;
         this.registerSelector.itemChange.subscribe({
-            next: () => {
-                this.regionSelector.selectItem(undefined);
-                this.billingSelector.selectItem(undefined);
-            },
+            next: () => this.onRegisterSelected(),
         });
 
         this.regionSelector = selectedItemFactory.create({
             displayFunction: (region) => (region != null ? region.name : 'Select Region'),
+            propertyKey: 'code',
+            valueIndex: 2,
         });
         this.regionSelector.itemChange.subscribe({
             next: (region: IRegion | undefined) => this.onRegionSelected(region),
@@ -45,6 +48,8 @@ export class TariffSelectorComponent implements OnInit {
 
         this.billingSelector = selectedItemFactory.create({
             displayFunction: (billing) => (billing != null ? this.billingDisplayValue(billing) : 'Select Billing Type'),
+            propertyKey: 'type',
+            valueIndex: 3,
         });
         this.billingTypeChange = this.billingSelector.itemChange;
     }
@@ -73,8 +78,6 @@ export class TariffSelectorComponent implements OnInit {
             next: (products) => (this.productSelector.items = products),
         });
         this.productSelector.loadItems(firstValueFrom(this.productsService.initialise()));
-
-        this.loadRegions();
     }
 
     public registerDisplayValue(register: IRegister): string {
@@ -103,16 +106,10 @@ export class TariffSelectorComponent implements OnInit {
         }
     }
 
-    private async loadRegions() {
-        this.regionSelector.items = await this.octopusService.getRegionsAsync();
-    }
-
     private onProductSelected(product: IProduct | undefined) {
         this._productDetail = undefined;
         this.productChange.emit(undefined);
         this.registerSelector.selectItem(undefined);
-        this.regionSelector.selectItem(undefined);
-        this.billingSelector.selectItem(undefined);
 
         if (product == null) {
             return;
@@ -129,6 +126,16 @@ export class TariffSelectorComponent implements OnInit {
                 this.productChange.emit(detail);
             },
         });
+
+        this.updateUrl();
+    }
+
+    private onRegisterSelected() {
+        this.regionSelector.selectItem(undefined);
+
+        this.regionSelector.loadItems(this.octopusService.getRegionsAsync());
+
+        this.updateUrl();
     }
 
     private onRegionSelected(region: IRegion | undefined) {
@@ -150,6 +157,27 @@ export class TariffSelectorComponent implements OnInit {
                 tariff,
             }))
             .filter(isIBillingType);
+
+        this.updateUrl();
+    }
+
+    private updateUrl() {
+        const values = [
+            this.productSelector.deeplinkValue,
+            this.registerSelector.deeplinkValue,
+            this.regionSelector.deeplinkValue,
+            this.billingSelector.deeplinkValue,
+        ].join('|');
+
+        const urlParams = `?tariff=${values}`;
+
+        if (urlParams != window.location.search) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('tariff', values);
+            console.log(`update url`, { url: url.toString(), values });
+
+            window.history.pushState({}, '', url);
+        }
     }
 }
 
