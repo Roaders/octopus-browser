@@ -1,13 +1,13 @@
-<div>
+<div class="container">
 
     <div>
         <product-filter></product-filter>
         <tariff-selector (productChange)="onProductSelected($event)" (billingTypeChange)="onBillingSelected($event)"></tariff-selector>
     </div>
 
-    <div class="d-flex">
-        <selected-product class="flex-grow-1" [product]="product"></selected-product>
-        <selected-tariff class="flex-grow-1" [tariff]="tariff"></selected-tariff>
+    <div class="row">
+        <selected-product class="col-xl" [product]="product"></selected-product>
+        <selected-tariff class="col-xl" [tariff]="tariff"></selected-tariff>
     </div>
 
 </div>
