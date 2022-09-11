@@ -1,5 +1,5 @@
 import { Injectable } from '@morgan-stanley/needle';
-import { firstValueFrom, from, map, mergeMap, Observable, shareReplay } from 'rxjs';
+import { config, firstValueFrom, from, map, mergeMap, Observable, shareReplay } from 'rxjs';
 import * as format from 'string-template';
 
 import { CHARGES_URI, PRODUCT_URI, PRODUCTS_URI, Regions } from '../constants';
@@ -13,6 +13,7 @@ import {
     IRegion,
     ITariff,
     LinkRel,
+    LoadChargesConfig,
 } from '../contracts';
 
 @Injectable()
@@ -47,12 +48,7 @@ export class OctopusService {
         return Regions;
     }
 
-    public async loadCharges(request: {
-        product: IProduct<Date>;
-        tariff: ITariff;
-        register: 'electricity-tariffs' | 'gas-tariffs';
-        chargeType: LinkRel | ChargeType;
-    }): Promise<ICharge<Date>[]> {
+    public async loadCharges(request: LoadChargesConfig): Promise<ICharge<Date>[]> {
         let chargeType: ChargeType;
 
         switch (request.chargeType) {
@@ -78,9 +74,13 @@ export class OctopusService {
             tariffCode: request.tariff.code,
             chargeType,
         };
-        const url = format(CHARGES_URI, urlParams);
+        const url = new URL(format(CHARGES_URI, urlParams));
+        url.searchParams.set('period_from', request.periodFrom.toISOString());
+        url.searchParams.set('period_To', request.periodTo.toISOString());
 
-        console.log(`loadCharges`, url);
+        if (request.pageSize != null) {
+            url.searchParams.set('page_size', request.pageSize.toFixed(0));
+        }
 
         const response: ChargesResponse = await fetch(url).then((r) => r.json());
         const results = response.results;

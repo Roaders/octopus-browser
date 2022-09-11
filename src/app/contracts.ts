@@ -111,3 +111,13 @@ export interface ICharge<TDate extends DateOrString = string> {
     valid_from: TDate;
     valid_to: TDate;
 }
+
+export interface LoadChargesConfig {
+    product: IProduct<Date>;
+    tariff: ITariff;
+    register: 'electricity-tariffs' | 'gas-tariffs';
+    chargeType: LinkRel | ChargeType;
+    pageSize?: number;
+    periodFrom: Date;
+    periodTo: Date;
+}

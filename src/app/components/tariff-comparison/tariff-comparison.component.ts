@@ -38,11 +38,17 @@ export class TariffComparisonComponent {
         tariffAndProduct.tariff.links.forEach(async (link) => {
             console.log(`loadCharges: ${link.href}`);
 
+            const now = new Date();
+            const start = now.getTime() - 3600 * 1000 * 24 * 10;
+
             const values = await this.octopusService.loadCharges({
                 product: tariffAndProduct.product,
                 tariff: tariffAndProduct.tariff,
                 register: 'electricity-tariffs',
                 chargeType: link.rel,
+                pageSize: 1500,
+                periodFrom: new Date(start),
+                periodTo: now,
             });
 
             this.charges[tariffAndProduct.tariff.code] = this.charges[tariffAndProduct.tariff.code] || {};

@@ -6,7 +6,7 @@
 
         <div class="row">
             <div *ngFor="let link of tariffAndProduct.tariff.links" class="col">
-                <div>{{link.rel}}</div>
+                <div>{{link.rel}} ({{getValues(tariffAndProduct.tariff.code, link.rel).length}})</div>
 
                 <ul>
                     <li *ngFor="let charge of getValues(tariffAndProduct.tariff.code, link.rel)">{{charge.value_inc_vat}}</li>
