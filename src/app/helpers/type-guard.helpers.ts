@@ -28,6 +28,10 @@ export function isIBillingType(value: unknown): value is IBillingType {
     return isITariff(register.tariff);
 }
 
+export function isDefined<T>(value: T | null | undefined): value is T {
+    return value != null;
+}
+
 function isObject(value: unknown): boolean {
     return value != null && typeof value === 'object';
 }

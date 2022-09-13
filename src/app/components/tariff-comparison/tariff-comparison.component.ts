@@ -1,10 +1,11 @@
 import { Component, Input } from '@angular/core';
 
-import { ICharge, TariffWithProduct } from '../../contracts';
+import { ICharge, ITariff, LinkRel, TariffWithProduct } from '../../contracts';
+import { isDefined } from '../../helpers';
 import { OctopusService } from '../../services';
 
-type BarChartValue = { name: string; value: number };
-type GroupedBarChartValue = { name: string; series: BarChartValue[] };
+type BarChartValue = { name: string | Date | number; value: number };
+type GroupedBarChartValue = { name: string | Date | number; series: BarChartValue[] };
 type ChartDimensions = [number, number];
 
 const standingChartBarWidth = 400;
@@ -18,7 +19,7 @@ const standingChargesHeight = 300;
 export class TariffComparisonComponent {
     constructor(private octopusService: OctopusService) {}
 
-    private charges: Record<string, Record<string, ICharge<Date>[]>> = {};
+    private charges: Partial<Record<string, Partial<Record<LinkRel, ICharge<Date>[]>>>> = {};
 
     private _tariffs: TariffWithProduct[] = [];
 
@@ -31,12 +32,19 @@ export class TariffComparisonComponent {
         this._tariffs = value;
 
         this.updateStandingChargesChart();
+        this.updateUnitRatesChart();
         this.loadTariffs();
     }
 
-    public getValues(tariffCode: string, rel: string): ICharge<Date>[] {
+    public getValues(tariffCode: string, rel: LinkRel): ICharge<Date>[] {
         const values = this.charges[tariffCode]?.[rel];
         return Array.isArray(values) ? values : [];
+    }
+
+    private _unitRatesData: GroupedBarChartValue[] = [];
+
+    public get unitRatesData(): GroupedBarChartValue[] {
+        return this._unitRatesData;
     }
 
     private _standingChargesData: GroupedBarChartValue[] = [];
@@ -51,14 +59,60 @@ export class TariffComparisonComponent {
         return this._standingChargesDimensions;
     }
 
-    private updateStandingChargesChart() {
-        this._standingChargesData = this._tariffs.map((tariff) => ({
-            name: tariff.tariff.code,
-            series: [
-                { name: 'inc vat', value: tariff.tariff.standing_charge_inc_vat, code: 'incl' },
-                { name: 'ex vat', value: tariff.tariff.standing_charge_exc_vat, code: 'excl' },
-            ],
+    private updateUnitRatesChart() {
+        const timeSpans = this.getTimeSpans();
+
+        const seriesLookup = this.tariffs
+            .map(({ tariff }) => tariff)
+            .reduce(
+                (lookup, tariff) => lookup.set(tariff.code, this.getUnitRateSeries(tariff)),
+                new Map<string, BarChartValue[] | undefined>()
+            );
+
+        this._unitRatesData = timeSpans
+            .map((span, index) => {
+                return {
+                    name: span.valid_from.getTime(),
+                    series: this.tariffs
+                        .map(({ tariff }) => tariff)
+                        .map((tariff) => seriesLookup.get(tariff.code)?.[index])
+                        .filter(isDefined),
+                };
+            })
+            .filter(isDefined);
+    }
+
+    private getTimeSpans(): Omit<ICharge<Date>, 'value_exc_vat' | 'value_inc_vat'>[] {
+        const tariff = this.tariffs[0]; // TODO
+
+        const charges = this.charges[tariff.tariff.code]?.['standard_unit_rates']; // TODO
+
+        return charges?.map(({ valid_from, valid_to }) => ({ valid_from, valid_to })) ?? [];
+    }
+
+    private getUnitRateSeries(tariff: ITariff): BarChartValue[] | undefined {
+        const charges = this.charges[tariff.code]?.['standard_unit_rates']; // TODO
+
+        if (charges == null) {
+            return undefined;
+        }
+
+        return charges.map((charge) => ({
+            name: tariff.code,
+            value: charge.value_inc_vat,
         }));
+    }
+
+    private updateStandingChargesChart() {
+        this._standingChargesData = this._tariffs
+            .map(({ tariff }) => tariff)
+            .map((tariff) => ({
+                name: tariff.code,
+                series: [
+                    { name: 'inc vat', value: tariff.standing_charge_inc_vat },
+                    { name: 'ex vat', value: tariff.standing_charge_exc_vat },
+                ],
+            }));
 
         this._standingChargesDimensions = [this._tariffs.length + 2 * standingChartBarWidth, standingChargesHeight];
     }
@@ -84,9 +138,12 @@ export class TariffComparisonComponent {
                 periodTo: now,
             });
 
-            this.charges[tariffAndProduct.tariff.code] = this.charges[tariffAndProduct.tariff.code] || {};
+            const tariffLinkLookup = (this.charges[tariffAndProduct.tariff.code] =
+                this.charges[tariffAndProduct.tariff.code] || {});
 
-            this.charges[tariffAndProduct.tariff.code][link.rel] = values;
+            tariffLinkLookup[link.rel] = values;
+
+            this.updateUnitRatesChart();
         });
     }
 }
