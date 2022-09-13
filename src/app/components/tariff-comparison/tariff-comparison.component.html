@@ -4,14 +4,27 @@
     <div *ngFor="let tariffAndProduct of tariffs">
         <div>{{tariffAndProduct.tariff.code}}</div>
 
+        <div class="pt-3">
+            <h4>Standing Charge</h4>
+            <div class="row chart-container">
+                <ngx-charts-bar-vertical-2d [results]="standingChargesData" [view]="standingChargesDimensions"
+                    [xAxis]="true" [yAxis]="true" [legend]="true" [showXAxisLabel]="true"
+                    [showYAxisLabel]="true" [xAxisLabel]="'Tariff'" [yAxisLabel]="'p/day'"
+                    >
+                </ngx-charts-bar-vertical-2d>
+            </div>
+        </div>
+
         <div class="row">
             <div *ngFor="let link of tariffAndProduct.tariff.links" class="col">
                 <div>{{link.rel}} ({{getValues(tariffAndProduct.tariff.code, link.rel).length}})</div>
 
                 <ul>
-                    <li *ngFor="let charge of getValues(tariffAndProduct.tariff.code, link.rel)">{{charge.value_inc_vat}}</li>
+                    <li *ngFor="let charge of getValues(tariffAndProduct.tariff.code, link.rel)">
+                        {{charge.value_inc_vat}}</li>
                 </ul>
             </div>
         </div>
     </div>
+
 </div>
