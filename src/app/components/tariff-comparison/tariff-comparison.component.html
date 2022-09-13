@@ -8,7 +8,7 @@
             <h4>Unit Rates</h4>
             <div class="row chart-container">
                 <ngx-charts-bar-vertical-2d [results]="unitRatesData"
-                    [xAxis]="true" [yAxis]="true"
+                    [xAxis]="true" [yAxis]="true" 
                     [showYAxisLabel]="true" [yAxisLabel]="'p/kWh'"
                     >
                 </ngx-charts-bar-vertical-2d>
@@ -25,17 +25,5 @@
                 </ngx-charts-bar-vertical-2d>
             </div>
         </div>
-
-        <div class="row">
-            <div *ngFor="let link of tariffAndProduct.tariff.links" class="col">
-                <div>{{link.rel}} ({{getValues(tariffAndProduct.tariff.code, link.rel).length}})</div>
-
-                <ul>
-                    <li *ngFor="let charge of getValues(tariffAndProduct.tariff.code, link.rel)">
-                        {{charge.value_inc_vat}}</li>
-                </ul>
-            </div>
-        </div>
     </div>
-
 </div>

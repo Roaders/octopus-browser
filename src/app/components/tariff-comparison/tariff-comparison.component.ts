@@ -36,11 +36,6 @@ export class TariffComparisonComponent {
         this.loadTariffs();
     }
 
-    public getValues(tariffCode: string, rel: LinkRel): ICharge<Date>[] {
-        const values = this.charges[tariffCode]?.[rel];
-        return Array.isArray(values) ? values : [];
-    }
-
     private _unitRatesData: GroupedBarChartValue[] = [];
 
     public get unitRatesData(): GroupedBarChartValue[] {
