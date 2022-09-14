@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { NgxChartsModule } from '@swimlane/ngx-charts';
+import { NgChartsModule } from 'ng2-charts';
 
 import { AppComponent } from './components/app/app.component';
 import { ItemSelectComponent } from './components/item-select/item-select.component';
@@ -27,7 +27,7 @@ import { YesNoPipe } from './pipes/yes-no.pipe';
         BrandNamePipe,
         TariffComparisonComponent,
     ],
-    imports: [BrowserModule, NgbModule, NgxChartsModule],
+    imports: [BrowserModule, NgbModule, NgChartsModule],
     providers: [],
     bootstrap: [AppComponent],
 })

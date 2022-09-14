@@ -4,26 +4,24 @@
     <div *ngFor="let tariffAndProduct of tariffs">
         <div>{{tariffAndProduct.tariff.code}}</div>
 
-        <div class="pt-3">
+        <div *ngIf="unitRatesConfig != null" class="pt-3">
             <h4>Unit Rates</h4>
             <div class="row chart-container">
-                <ngx-charts-bar-vertical-2d [results]="unitRatesData"
-                    [xAxis]="true" [yAxis]="true" 
-                    [showYAxisLabel]="true" [yAxisLabel]="'p/kWh'"
-                    >
-                </ngx-charts-bar-vertical-2d>
+                <canvas baseChart 
+                    [data]="unitRatesConfig.data" 
+                    [options]="unitRatesConfig.options"
+                    type="bar"></canvas>
             </div>
         </div>
 
-        <div class="pt-3">
+        <!-- <div *ngIf="standingChargesConfig != null" class="pt-3">
             <h4>Standing Charge</h4>
             <div class="row chart-container">
-                <ngx-charts-bar-vertical-2d [results]="standingChargesData" [view]="standingChargesDimensions"
-                    [xAxis]="true" [yAxis]="true" [legend]="true" [showXAxisLabel]="true"
-                    [showYAxisLabel]="true" [xAxisLabel]="'Tariff'" [yAxisLabel]="'p/day'"
-                    >
-                </ngx-charts-bar-vertical-2d>
+                <canvas baseChart 
+                    [data]="standingChargesConfig?.data" 
+                    [options]="standingChargesConfig?.options"
+                    type="bar"></canvas>
             </div>
-        </div>
+        </div> -->
     </div>
 </div>

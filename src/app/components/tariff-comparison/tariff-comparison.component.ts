@@ -1,15 +1,13 @@
 import { Component, Input } from '@angular/core';
+import { Chart, ChartConfiguration } from 'chart.js';
+import { format } from 'date-fns';
 
 import { ICharge, ITariff, LinkRel, TariffWithProduct } from '../../contracts';
 import { isDefined } from '../../helpers';
 import { OctopusService } from '../../services';
 
-type BarChartValue = { name: string | Date | number; value: number };
-type GroupedBarChartValue = { name: string | Date | number; series: BarChartValue[] };
-type ChartDimensions = [number, number];
-
-const standingChartBarWidth = 400;
-const standingChargesHeight = 300;
+type Timespan = Omit<ICharge<Date>, 'value_exc_vat' | 'value_inc_vat'>;
+type BarData = { charge: ICharge<Date>; dateLabel: string } & TariffWithProduct;
 
 @Component({
     selector: 'tariff-comparison',
@@ -36,80 +34,100 @@ export class TariffComparisonComponent {
         this.loadTariffs();
     }
 
-    private _unitRatesData: GroupedBarChartValue[] = [];
+    private _unitRatesConfig: ChartConfiguration<'bar', BarData[]> | undefined;
 
-    public get unitRatesData(): GroupedBarChartValue[] {
-        return this._unitRatesData;
+    public get unitRatesConfig(): ChartConfiguration<'bar', BarData[]> | undefined {
+        return this._unitRatesConfig;
     }
 
-    private _standingChargesData: GroupedBarChartValue[] = [];
+    private _standingChargesConfig: ChartConfiguration<'bar'> | undefined;
 
-    public get standingChargesData(): GroupedBarChartValue[] {
-        return this._standingChargesData;
-    }
-
-    private _standingChargesDimensions: ChartDimensions = [standingChartBarWidth, standingChargesHeight];
-
-    public get standingChargesDimensions(): ChartDimensions {
-        return this._standingChargesDimensions;
+    public get standingChargesConfig(): ChartConfiguration<'bar'> | undefined {
+        return this._standingChargesConfig;
     }
 
     private updateUnitRatesChart() {
-        const timeSpans = this.getTimeSpans();
+        const seriesLookup = this.tariffs.reduce(
+            (lookup, tariffWithProduct) =>
+                lookup.set(tariffWithProduct.tariff.code, this.getUnitRateSeries(tariffWithProduct.tariff)),
+            new Map<string, ICharge<Date>[] | undefined>()
+        );
 
-        const seriesLookup = this.tariffs
-            .map(({ tariff }) => tariff)
-            .reduce(
-                (lookup, tariff) => lookup.set(tariff.code, this.getUnitRateSeries(tariff)),
-                new Map<string, BarChartValue[] | undefined>()
-            );
+        this._unitRatesConfig = {
+            type: 'bar',
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                    },
+                    tooltip: {
+                        ...Chart.defaults.plugins.tooltip,
+                        callbacks: {
+                            title: (items) => {
+                                return items.map((item) => {
+                                    console.log(item);
+                                    return getSpanLabel((item.raw as BarData).charge);
+                                });
+                            },
+                        },
+                    },
+                },
 
-        this._unitRatesData = timeSpans
-            .map((span, index) => {
-                return {
-                    name: span.valid_from.getTime(),
-                    series: this.tariffs
-                        .map(({ tariff }) => tariff)
-                        .map((tariff) => seriesLookup.get(tariff.code)?.[index])
-                        .filter(isDefined),
-                };
-            })
-            .filter(isDefined);
+                parsing: {
+                    xAxisKey: 'dateLabel',
+                    yAxisKey: 'charge.value_inc_vat',
+                },
+            },
+            data: {
+                labels: seriesLookup
+                    .get(this.tariffs[0].tariff.code)
+                    ?.map((span, index, spans) => getSpanLabel(span, spans[index - 1])),
+                datasets: this.tariffs
+                    .map((tariffWithProduct) => {
+                        const series = seriesLookup.get(tariffWithProduct.tariff.code);
+
+                        if (series == null) {
+                            return undefined;
+                        }
+
+                        return {
+                            data: series.map((charge, index, charges) => ({
+                                dateLabel: getSpanLabel(charge, charges[index - 1]),
+                                charge,
+                                ...tariffWithProduct,
+                            })),
+                            label: tariffWithProduct.tariff.code,
+                        };
+                    })
+                    .filter(isDefined),
+            },
+        };
     }
 
-    private getTimeSpans(): Omit<ICharge<Date>, 'value_exc_vat' | 'value_inc_vat'>[] {
-        const tariff = this.tariffs[0]; // TODO
-
-        const charges = this.charges[tariff.tariff.code]?.['standard_unit_rates']; // TODO
-
-        return charges?.map(({ valid_from, valid_to }) => ({ valid_from, valid_to })) ?? [];
-    }
-
-    private getUnitRateSeries(tariff: ITariff): BarChartValue[] | undefined {
-        const charges = this.charges[tariff.code]?.['standard_unit_rates']; // TODO
-
-        if (charges == null) {
-            return undefined;
-        }
-
-        return charges.map((charge) => ({
-            name: tariff.code,
-            value: charge.value_inc_vat,
-        }));
+    private getUnitRateSeries(tariff: ITariff): ICharge<Date>[] | undefined {
+        return this.charges[tariff.code]?.['standard_unit_rates']; // TODO
     }
 
     private updateStandingChargesChart() {
-        this._standingChargesData = this._tariffs
-            .map(({ tariff }) => tariff)
-            .map((tariff) => ({
-                name: tariff.code,
-                series: [
-                    { name: 'inc vat', value: tariff.standing_charge_inc_vat },
-                    { name: 'ex vat', value: tariff.standing_charge_exc_vat },
+        this._standingChargesConfig = {
+            type: 'bar',
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                    },
+                },
+            },
+            data: {
+                labels: this.tariffs.map((value) => value.tariff.code),
+                datasets: [
+                    { data: this.tariffs.map((value) => value.tariff.standing_charge_inc_vat), label: 'Incl. Vat' },
+                    { data: this.tariffs.map((value) => value.tariff.standing_charge_exc_vat), label: 'Excl. Vat' },
                 ],
-            }));
-
-        this._standingChargesDimensions = [this._tariffs.length + 2 * standingChartBarWidth, standingChargesHeight];
+            },
+        };
     }
 
     private loadTariffs() {
@@ -118,8 +136,6 @@ export class TariffComparisonComponent {
 
     private async loadCharges(tariffAndProduct: TariffWithProduct) {
         tariffAndProduct.tariff.links.forEach(async (link) => {
-            console.log(`loadCharges: ${link.href}`);
-
             const now = new Date();
             const start = now.getTime() - 3600 * 1000 * 24 * 10;
 
@@ -141,4 +157,14 @@ export class TariffComparisonComponent {
             this.updateUnitRatesChart();
         });
     }
+}
+
+function getSpanLabel(span: Timespan, previous?: Timespan): string {
+    const time = `${format(span.valid_from, 'HH:mm')} - ${format(span.valid_to, 'HH:mm')}`;
+    const date = span.valid_from.toDateString();
+    if (previous != null && getSpanLabel(previous).indexOf(date) === 0) {
+        return time;
+    }
+
+    return `${date} ${time}`;
 }

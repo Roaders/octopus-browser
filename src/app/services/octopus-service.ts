@@ -85,11 +85,13 @@ export class OctopusService {
         const response: ChargesResponse = await fetch(url).then((r) => r.json());
         const results = response.results;
 
-        return results.map((result) => ({
-            ...result,
-            valid_from: parseDate(result.valid_from),
-            valid_to: parseDate(result.valid_to),
-        }));
+        return results
+            .map((result) => ({
+                ...result,
+                valid_from: parseDate(result.valid_from),
+                valid_to: parseDate(result.valid_to),
+            }))
+            .sort((a, b) => a.valid_from.getTime() - b.valid_from.getTime());
     }
 }
 function parseDate(value: string): Date;
