@@ -14,14 +14,14 @@
             </div>
         </div>
 
-        <!-- <div *ngIf="standingChargesConfig != null" class="pt-3">
+        <div *ngIf="standingChargesConfig != null" class="pt-3">
             <h4>Standing Charge</h4>
-            <div class="row chart-container">
+            <div class="row chart-container w-50">
                 <canvas baseChart 
-                    [data]="standingChargesConfig?.data" 
-                    [options]="standingChargesConfig?.options"
+                    [data]="standingChargesConfig.data" 
+                    [options]="standingChargesConfig.options"
                     type="bar"></canvas>
             </div>
-        </div> -->
+        </div>
     </div>
 </div>

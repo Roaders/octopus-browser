@@ -4,12 +4,13 @@ import { Component, Input } from '@angular/core';
 import { Chart, ChartConfiguration, Tick } from 'chart.js';
 import { format } from 'date-fns';
 
-import { ICharge, ITariff, LinkRel, TariffWithProduct } from '../../contracts';
+import { ICharge, LinkRel, TariffWithProduct } from '../../contracts';
 import { isDefined } from '../../helpers';
 import { OctopusService } from '../../services';
 
 type Timespan = Omit<ICharge<Date>, 'value_exc_vat' | 'value_inc_vat'>;
-type BarData = { charge: ICharge<Date>; date: Date } & TariffWithProduct;
+type BarData = { charge: ICharge<Date>; date: Date; value: number } & TariffWithProduct;
+type UnitRateSeries = TariffWithProduct & { charges: ICharge<Date>[]; incVat: boolean };
 
 @Component({
     selector: 'tariff-comparison',
@@ -49,16 +50,10 @@ export class TariffComparisonComponent {
     }
 
     private updateUnitRatesChart() {
-        const seriesLookup = this.tariffs.reduce(
-            (lookup, tariffWithProduct) =>
-                lookup.set(tariffWithProduct.tariff.code, this.getUnitRateSeries(tariffWithProduct.tariff)),
-            new Map<string, ICharge<Date>[] | undefined>()
-        );
-
         this._unitRatesConfig = {
             type: 'bar',
             options: {
-                responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         display: true,
@@ -74,7 +69,7 @@ export class TariffComparisonComponent {
                 },
                 parsing: {
                     xAxisKey: 'date',
-                    yAxisKey: 'charge.value_inc_vat',
+                    yAxisKey: 'value',
                 },
                 scales: {
                     y: {
@@ -96,22 +91,21 @@ export class TariffComparisonComponent {
                 },
             },
             data: {
-                labels: seriesLookup.get(this.tariffs[0].tariff.code)?.map((span) => span.valid_from),
-                datasets: this.tariffs
-                    .map((tariffWithProduct) => {
-                        const series = seriesLookup.get(tariffWithProduct.tariff.code);
-
+                datasets: this.getUnitRateSerieses()
+                    .map((series) => {
                         if (series == null) {
                             return undefined;
                         }
 
                         return {
-                            data: series.map((charge) => ({
+                            data: series.charges.map((charge) => ({
                                 date: charge.valid_from,
+                                value: series.incVat ? charge.value_inc_vat : charge.value_exc_vat,
                                 charge,
-                                ...tariffWithProduct,
+                                tariff: series.tariff,
+                                product: series.product,
                             })),
-                            label: tariffWithProduct.tariff.code,
+                            label: `${series.tariff.code} ${series.incVat ? 'Incl. Vat' : 'Excl. Vat'}`,
                         };
                     })
                     .filter(isDefined),
@@ -119,15 +113,29 @@ export class TariffComparisonComponent {
         };
     }
 
-    private getUnitRateSeries(tariff: ITariff): ICharge<Date>[] | undefined {
-        return this.charges[tariff.code]?.['standard_unit_rates']; // TODO
+    private getUnitRateSerieses(): UnitRateSeries[] {
+        return this.tariffs
+            .map((tariffWithProduct) => {
+                const charges = this.charges[tariffWithProduct.tariff.code]?.['standard_unit_rates'];
+
+                if (charges == null) {
+                    return undefined;
+                }
+
+                return { ...tariffWithProduct, charges };
+            })
+            .filter(isDefined)
+            .reduce(
+                (serieses, series) => [...serieses, { ...series, incVat: true }, { ...series, incVat: false }],
+                new Array<UnitRateSeries>()
+            );
     }
 
     private updateStandingChargesChart() {
         this._standingChargesConfig = {
             type: 'bar',
             options: {
-                responsive: true,
+                maintainAspectRatio: false,
                 plugins: {
                     legend: {
                         display: true,
