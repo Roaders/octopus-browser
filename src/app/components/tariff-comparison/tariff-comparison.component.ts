@@ -86,11 +86,11 @@ export class TariffComparisonComponent {
                             major: {
                                 enabled: true,
                             },
-                        },
-                        afterTickToLabelConversion: (axis) => {
-                            console.log(axis);
-                            axis.ticks = axis.ticks.map(formatTick);
-                            return axis;
+                            callback: (value, index, ticks) => {
+                                const tick = ticks[index];
+                                console.log(value, ticks[index]);
+                                return tick.major ? formatDateString(new Date(tick.value)) : undefined;
+                            },
                         },
                     },
                 },
@@ -173,9 +173,13 @@ export class TariffComparisonComponent {
     }
 }
 
+function formatDateString(date: Date): string {
+    return date.toDateString();
+}
+
 function getSpanLabel(span: Timespan, previous?: Timespan, separator = false): string {
     const time = `${format(span.valid_from, 'HH:mm')} - ${format(span.valid_to, 'HH:mm')}`;
-    const date = span.valid_from.toDateString();
+    const date = formatDateString(span.valid_from);
     if (previous != null && getSpanLabel(previous).indexOf(date) === 0) {
         return time;
     }
