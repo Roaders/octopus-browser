@@ -26,6 +26,7 @@
     "@popperjs/core": "^2.10.2",
     "@typescript-eslint/typescript-estree": "^5.36.2",
     "bootstrap": "^5.2.1",
+    "chartjs-adapter-date-fns": "^2.0.0",
     "date-fns": "^2.29.2",
     "reflect-metadata": "^0.1.13",
     "rxjs": "~7.5.0",

@@ -1,5 +1,7 @@
+import 'chartjs-adapter-date-fns';
+
 import { Component, Input } from '@angular/core';
-import { Chart, ChartConfiguration } from 'chart.js';
+import { Chart, ChartConfiguration, Tick } from 'chart.js';
 import { format } from 'date-fns';
 
 import { ICharge, ITariff, LinkRel, TariffWithProduct } from '../../contracts';
@@ -7,7 +9,7 @@ import { isDefined } from '../../helpers';
 import { OctopusService } from '../../services';
 
 type Timespan = Omit<ICharge<Date>, 'value_exc_vat' | 'value_inc_vat'>;
-type BarData = { charge: ICharge<Date>; dateLabel: string } & TariffWithProduct;
+type BarData = { charge: ICharge<Date>; date: Date } & TariffWithProduct;
 
 @Component({
     selector: 'tariff-comparison',
@@ -65,24 +67,36 @@ export class TariffComparisonComponent {
                         ...Chart.defaults.plugins.tooltip,
                         callbacks: {
                             title: (items) => {
-                                return items.map((item) => {
-                                    console.log(item);
-                                    return getSpanLabel((item.raw as BarData).charge);
-                                });
+                                return items.map((item) => getSpanLabel((item.raw as BarData).charge));
                             },
                         },
                     },
                 },
-
                 parsing: {
-                    xAxisKey: 'dateLabel',
+                    xAxisKey: 'date',
                     yAxisKey: 'charge.value_inc_vat',
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                    },
+                    x: {
+                        type: 'time',
+                        ticks: {
+                            major: {
+                                enabled: true,
+                            },
+                        },
+                        afterTickToLabelConversion: (axis) => {
+                            console.log(axis);
+                            axis.ticks = axis.ticks.map(formatTick);
+                            return axis;
+                        },
+                    },
                 },
             },
             data: {
-                labels: seriesLookup
-                    .get(this.tariffs[0].tariff.code)
-                    ?.map((span, index, spans) => getSpanLabel(span, spans[index - 1])),
+                labels: seriesLookup.get(this.tariffs[0].tariff.code)?.map((span) => span.valid_from),
                 datasets: this.tariffs
                     .map((tariffWithProduct) => {
                         const series = seriesLookup.get(tariffWithProduct.tariff.code);
@@ -92,8 +106,8 @@ export class TariffComparisonComponent {
                         }
 
                         return {
-                            data: series.map((charge, index, charges) => ({
-                                dateLabel: getSpanLabel(charge, charges[index - 1]),
+                            data: series.map((charge) => ({
+                                date: charge.valid_from,
                                 charge,
                                 ...tariffWithProduct,
                             })),
@@ -159,7 +173,7 @@ export class TariffComparisonComponent {
     }
 }
 
-function getSpanLabel(span: Timespan, previous?: Timespan): string {
+function getSpanLabel(span: Timespan, previous?: Timespan, separator = false): string {
     const time = `${format(span.valid_from, 'HH:mm')} - ${format(span.valid_to, 'HH:mm')}`;
     const date = span.valid_from.toDateString();
     if (previous != null && getSpanLabel(previous).indexOf(date) === 0) {
@@ -167,4 +181,15 @@ function getSpanLabel(span: Timespan, previous?: Timespan): string {
     }
 
     return `${date} ${time}`;
+}
+
+function formatTick(tick: Tick): Tick {
+    const labelSplit = typeof tick.label === 'string' ? tick.label.split('|') : undefined;
+
+    // if (labelSplit != null && labelSplit?.length > 1) {
+    //     tick.major = true;
+    //     tick.label = labelSplit[0];
+    // }
+
+    return tick;
 }
