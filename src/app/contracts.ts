@@ -1,3 +1,7 @@
+export const IncludeVatValues = ['Vat Incl.', 'Vat Excl.', 'Show Both'] as const;
+
+export type IncludeVat = typeof IncludeVatValues[number];
+
 export interface IProductsResponse {
     count: number;
     next: string | null;

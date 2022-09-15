@@ -1,0 +1,9 @@
+<div *ngIf="unitRatesConfig != null" class="pt-3">
+    <h4>Unit Rates</h4>
+    <div class="row chart-container">
+        <canvas baseChart 
+            [data]="unitRatesConfig.data" 
+            [options]="unitRatesConfig.options"
+            type="bar"></canvas>
+    </div>
+</div>
