@@ -1,10 +1,11 @@
-import { IncludeVat, IRegion } from './contracts';
+import { IncludeVat, IRegion, TimePeriod } from './contracts';
 
 export const PRODUCTS_URI = `https://api.octopus.energy/v1/products`;
 export const PRODUCT_URI = `https://api.octopus.energy/v1/products/{code}/`;
 export const CHARGES_URI = `https://api.octopus.energy/v1/products/{productCode}/{register}/{tariffCode}/{chargeType}/`;
 
 export const defaultInclVat: IncludeVat = 'Vat Incl.';
+export const defaultPeriod: TimePeriod = 'Week';
 
 export const checkboxKeys = [
     'variable',

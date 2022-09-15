@@ -1,6 +1,12 @@
 export const IncludeVatValues = ['Vat Incl.', 'Vat Excl.', 'Show Both'] as const;
-
 export type IncludeVat = typeof IncludeVatValues[number];
+
+export const TimePeriods = ['Day', 'Week', 'Month'] as const;
+export type TimePeriod = typeof TimePeriods[number];
+
+export type TariffWithProduct = { tariff: ITariff; product: IProductDetail<Date> };
+
+export type ChartSeries = TariffWithProduct & { incVat: boolean };
 
 export interface IProductsResponse {
     count: number;
@@ -99,8 +105,6 @@ export interface IRegion {
     MPAN: number;
     name: string;
 }
-
-export type TariffWithProduct = { tariff: ITariff; product: IProductDetail<Date> };
 
 export interface ChargesResponse {
     count: number;

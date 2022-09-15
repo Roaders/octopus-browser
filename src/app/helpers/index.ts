@@ -1,3 +1,4 @@
+export * from './chart.helper';
 export * from './selected.helper';
 export * from './type-guard.helpers';
 export * from './url.helper';

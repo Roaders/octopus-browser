@@ -1,9 +1,12 @@
 <div *ngIf="unitRatesConfig != null" class="pt-3">
     <h4>Unit Rates</h4>
+
+    <div class="btn-group" role="group" aria-label="Time Period">
+        <button *ngFor="let period of timePeriods" type="button" class="btn btn-outline-primary"
+            [ngClass]="{active: period === selectedPeriod}" (click)="selectedPeriod = period">{{period}}</button>
+    </div>
+
     <div class="row chart-container">
-        <canvas baseChart 
-            [data]="unitRatesConfig.data" 
-            [options]="unitRatesConfig.options"
-            type="bar"></canvas>
+        <canvas baseChart [data]="unitRatesConfig.data" [options]="unitRatesConfig.options" type="bar"></canvas>
     </div>
 </div>

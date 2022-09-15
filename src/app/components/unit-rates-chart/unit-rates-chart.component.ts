@@ -4,14 +4,13 @@ import { Component, Input } from '@angular/core';
 import { Chart, ChartConfiguration } from 'chart.js';
 import { format } from 'date-fns';
 
-import { defaultInclVat } from '../../constants';
-import { ICharge, IncludeVat, LinkRel, TariffWithProduct } from '../../contracts';
-import { filterInclVatValues, isDefined } from '../../helpers';
+import { defaultInclVat, defaultPeriod } from '../../constants';
+import { ICharge, IncludeVat, LinkRel, TariffWithProduct, TimePeriod, TimePeriods } from '../../contracts';
+import { getChartSerieses, isDefined } from '../../helpers';
 import { OctopusService } from '../../services';
 
 type Timespan = Omit<ICharge<Date>, 'value_exc_vat' | 'value_inc_vat'>;
 type BarData = { charge: ICharge<Date>; date: Date; value: number } & TariffWithProduct;
-type UnitRateSeries = TariffWithProduct & { charges: ICharge<Date>[]; incVat: boolean };
 
 @Component({
     selector: 'unit-rates-chart',
@@ -20,7 +19,25 @@ type UnitRateSeries = TariffWithProduct & { charges: ICharge<Date>[]; incVat: bo
 export class UnitRatesChartComponent {
     constructor(private octopusService: OctopusService) {}
 
-    private charges: Partial<Record<string, Partial<Record<LinkRel, ICharge<Date>[]>>>> = {};
+    private chargeType: LinkRel = 'standard_unit_rates';
+
+    private chargesLookup: Partial<Record<string, ICharge<Date>[]>> = {};
+
+    public get timePeriods(): ReadonlyArray<TimePeriod> {
+        return TimePeriods;
+    }
+
+    private _period: TimePeriod = defaultPeriod;
+
+    public get selectedPeriod(): TimePeriod {
+        return this._period;
+    }
+
+    public set selectedPeriod(value: TimePeriod) {
+        this._period = value;
+
+        this.loadTariffs();
+    }
 
     private _includeVat: IncludeVat = defaultInclVat;
 
@@ -96,14 +113,16 @@ export class UnitRatesChartComponent {
                 },
             },
             data: {
-                datasets: this.getUnitRateSerieses()
+                datasets: getChartSerieses(this.tariffs, this.includeVat)
                     .map((series) => {
-                        if (series == null) {
+                        const charges = this.chargesLookup[series.tariff.code];
+
+                        if (charges == null) {
                             return undefined;
                         }
 
                         return {
-                            data: series.charges.map((charge) => ({
+                            data: charges.map((charge) => ({
                                 date: charge.valid_from,
                                 value: series.incVat ? charge.value_inc_vat : charge.value_exc_vat,
                                 charge,
@@ -118,57 +137,50 @@ export class UnitRatesChartComponent {
         };
     }
 
-    private getUnitRateSerieses(): UnitRateSeries[] {
-        const inclVatValues = (['Vat Incl.', 'Vat Excl.'] as const).filter((value) =>
-            filterInclVatValues(value, this.includeVat)
-        );
-
-        return this.tariffs
-            .map((tariffWithProduct) => {
-                const charges = this.charges[tariffWithProduct.tariff.code]?.['standard_unit_rates'];
-
-                if (charges == null) {
-                    return undefined;
-                }
-
-                return { ...tariffWithProduct, charges };
-            })
-            .filter(isDefined)
-            .reduce(
-                (serieses, series) => [
-                    ...serieses,
-                    ...inclVatValues.map((value) => ({ ...series, incVat: value === 'Vat Incl.' })),
-                ],
-                new Array<UnitRateSeries>()
-            );
-    }
-
     private loadTariffs() {
-        this._tariffs.forEach((tariff) => this.loadCharges(tariff));
+        this.chargesLookup = {};
+        this.updateUnitRatesChart();
+
+        // TODO
+        const now = new Date();
+        let start: number;
+
+        const day = 3600 * 1000 * 24;
+
+        switch (this.selectedPeriod) {
+            case 'Day':
+                start = now.getTime() - day;
+                break;
+            case 'Week':
+                start = now.getTime() - day * 7;
+                break;
+
+            case 'Month':
+                start = now.getTime() - day * 28;
+                break;
+        }
+
+        this._tariffs.forEach((tariff) => this.loadCharges(tariff, new Date(start), now));
     }
 
-    private async loadCharges(tariffAndProduct: TariffWithProduct) {
-        tariffAndProduct.tariff.links.forEach(async (link) => {
-            const now = new Date();
-            const start = now.getTime() - 3600 * 1000 * 24 * 10;
+    private async loadCharges(tariffAndProduct: TariffWithProduct, periodFrom: Date, periodTo: Date) {
+        if (tariffAndProduct.tariff.links.every((link) => link.rel != this.chargeType)) {
+            return;
+        }
 
-            const values = await this.octopusService.loadCharges({
-                product: tariffAndProduct.product,
-                tariff: tariffAndProduct.tariff,
-                register: 'electricity-tariffs', // TODO
-                chargeType: link.rel,
-                pageSize: 1500,
-                periodFrom: new Date(start),
-                periodTo: now,
-            });
-
-            const tariffLinkLookup = (this.charges[tariffAndProduct.tariff.code] =
-                this.charges[tariffAndProduct.tariff.code] || {});
-
-            tariffLinkLookup[link.rel] = values;
-
-            this.updateUnitRatesChart();
+        const values = await this.octopusService.loadCharges({
+            product: tariffAndProduct.product,
+            tariff: tariffAndProduct.tariff,
+            register: 'electricity-tariffs', // TODO
+            chargeType: this.chargeType,
+            pageSize: 1500,
+            periodFrom,
+            periodTo,
         });
+
+        this.chargesLookup[tariffAndProduct.tariff.code] = values;
+
+        this.updateUnitRatesChart();
     }
 }
 
