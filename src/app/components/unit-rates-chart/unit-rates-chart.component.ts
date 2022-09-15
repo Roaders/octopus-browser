@@ -87,9 +87,8 @@ export class UnitRatesChartComponent {
                             major: {
                                 enabled: true,
                             },
-                            callback: (value, index, ticks) => {
+                            callback: (_value, index, ticks) => {
                                 const tick = ticks[index];
-                                console.log(value, ticks[index]);
                                 return tick.major ? formatDateString(new Date(tick.value)) : undefined;
                             },
                         },

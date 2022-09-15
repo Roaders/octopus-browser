@@ -7,6 +7,8 @@
                 <label class="form-check-label" for="flexCheckDefault">{{filterDisplayString(key)}}</label>
             </div>
         </div>
+
+        <button type="button" class="btn btn-primary btn-sm" (click)="reset()">Reset</button>
     </div>
 
     <div class="d-flex pb-2 flew-wrap" *ngIf="brands.length > 0">
@@ -20,5 +22,4 @@
         </div>
     </div>
 
-    <button type="button" class="btn btn-primary btn-sm" (click)="reset()">Reset</button>
 </div>
