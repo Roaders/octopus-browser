@@ -1,25 +1,29 @@
 import 'chartjs-adapter-date-fns';
 
 import { Component, Input } from '@angular/core';
-import { Chart, ChartConfiguration } from 'chart.js';
+import { ChartConfiguration, ChartDataset } from 'chart.js';
 import { format } from 'date-fns';
 
 import { defaultInclVat, defaultPeriod } from '../../constants';
-import { ICharge, IncludeVat, LinkRel, TariffWithProduct, TimePeriod, TimePeriods } from '../../contracts';
-import { getChartSerieses, isDefined } from '../../helpers';
+import { ChartSeries, ICharge, IncludeVat, LinkRel, TariffWithProduct, TimePeriod, TimePeriods } from '../../contracts';
+import { getChartSerieses, getTimes, isDefined, mapDateToCharge } from '../../helpers';
 import { OctopusService } from '../../services';
 
 type Timespan = Omit<ICharge<Date>, 'value_exc_vat' | 'value_inc_vat'>;
-type BarData = { charge: ICharge<Date>; date: Date; value: number } & TariffWithProduct;
+type ChartData = { charge?: ICharge<Date>; date: Date; value?: number } & TariffWithProduct;
 
 @Component({
     selector: 'unit-rates-chart',
     templateUrl: './unit-rates-chart.component.html',
 })
 export class UnitRatesChartComponent {
-    constructor(private octopusService: OctopusService) {}
+    constructor(private octopusService: OctopusService) {
+        this.chargeType = 'standard_unit_rates';
+        this._includeVat = defaultInclVat;
+        this.selectedPeriod = defaultPeriod;
+    }
 
-    private chargeType: LinkRel = 'standard_unit_rates';
+    private chargeType: LinkRel;
 
     private chargesLookup: Partial<Record<string, ICharge<Date>[]>> = {};
 
@@ -27,7 +31,7 @@ export class UnitRatesChartComponent {
         return TimePeriods;
     }
 
-    private _period: TimePeriod = defaultPeriod;
+    private _period: TimePeriod = 'Day';
 
     public get selectedPeriod(): TimePeriod {
         return this._period;
@@ -36,10 +40,17 @@ export class UnitRatesChartComponent {
     public set selectedPeriod(value: TimePeriod) {
         this._period = value;
 
+        this._periodTo = new Date();
+        this._periodFrom = calculatePeriodStart(this._periodTo, this.selectedPeriod);
+
         this.loadTariffs();
     }
 
-    private _includeVat: IncludeVat = defaultInclVat;
+    // updated in constructor by setting selectedPeriod
+    private _periodFrom: Date = new Date();
+    private _periodTo: Date = new Date();
+
+    private _includeVat: IncludeVat;
 
     @Input()
     public get includeVat(): IncludeVat {
@@ -66,15 +77,15 @@ export class UnitRatesChartComponent {
         this.loadTariffs();
     }
 
-    private _unitRatesConfig: ChartConfiguration<'bar', BarData[]> | undefined;
+    private _unitRatesConfig: ChartConfiguration<'line', ChartData[]> | undefined;
 
-    public get unitRatesConfig(): ChartConfiguration<'bar', BarData[]> | undefined {
+    public get unitRatesConfig(): ChartConfiguration<'line', ChartData[]> | undefined {
         return this._unitRatesConfig;
     }
 
     private updateUnitRatesChart() {
         this._unitRatesConfig = {
-            type: 'bar',
+            type: 'line',
             options: {
                 maintainAspectRatio: false,
                 plugins: {
@@ -82,10 +93,9 @@ export class UnitRatesChartComponent {
                         display: true,
                     },
                     tooltip: {
-                        ...Chart.defaults.plugins.tooltip,
                         callbacks: {
                             title: (items) => {
-                                return items.map((item) => getSpanLabel((item.raw as BarData).charge));
+                                return items.map((item) => getSpanLabel((item.raw as ChartData)?.charge));
                             },
                         },
                     },
@@ -104,66 +114,68 @@ export class UnitRatesChartComponent {
                             major: {
                                 enabled: true,
                             },
-                            callback: (_value, index, ticks) => {
-                                const tick = ticks[index];
-                                return tick.major ? formatDateString(new Date(tick.value)) : undefined;
-                            },
                         },
                     },
                 },
             },
             data: {
-                datasets: getChartSerieses(this.tariffs, this.includeVat)
-                    .map((series) => {
-                        const charges = this.chargesLookup[series.tariff.code];
-
-                        if (charges == null) {
-                            return undefined;
-                        }
-
-                        return {
-                            data: charges.map((charge) => ({
-                                date: charge.valid_from,
-                                value: series.incVat ? charge.value_inc_vat : charge.value_exc_vat,
-                                charge,
-                                tariff: series.tariff,
-                                product: series.product,
-                            })),
-                            label: `${series.tariff.code} ${series.incVat ? 'Incl. Vat' : 'Excl. Vat'}`,
-                        };
-                    })
-                    .filter(isDefined),
+                datasets: this.generateDataSets(),
             },
         };
+    }
+
+    private generateDataSets(): ChartDataset<'line', ChartData[]>[] {
+        return getChartSerieses(this.tariffs, this.includeVat)
+            .map((series) => {
+                const data = this.generateData(series);
+
+                if (data == null) {
+                    return undefined;
+                }
+
+                return {
+                    data,
+                    label: `${series.tariff.code} ${series.incVat ? 'Incl. Vat' : 'Excl. Vat'}`,
+                    pointRadius: 0,
+                    lineTension: 0,
+                    borderWidth: 1,
+                };
+            })
+            .filter(isDefined);
+    }
+
+    private generateData(series: ChartSeries): ChartData[] | undefined {
+        const times = getTimes(this._periodFrom, this._periodTo);
+        const charges = this.chargesLookup[series.tariff.code];
+
+        if (charges == null) {
+            return undefined;
+        }
+
+        //TODO: reduce data to include one entry for start and end of span
+        const data = times.map((date) => {
+            const charge = mapDateToCharge(date, charges);
+
+            return {
+                date,
+                value: series.incVat ? charge?.value_inc_vat : charge?.value_exc_vat,
+                charge,
+                tariff: series.tariff,
+                product: series.product,
+            };
+        });
+
+        return data;
     }
 
     private loadTariffs() {
         this.chargesLookup = {};
         this.updateUnitRatesChart();
 
-        // TODO
-        const now = new Date();
-        let start: number;
-
-        const day = 3600 * 1000 * 24;
-
-        switch (this.selectedPeriod) {
-            case 'Day':
-                start = now.getTime() - day;
-                break;
-            case 'Week':
-                start = now.getTime() - day * 7;
-                break;
-
-            case 'Month':
-                start = now.getTime() - day * 28;
-                break;
-        }
-
-        this._tariffs.forEach((tariff) => this.loadCharges(tariff, new Date(start), now));
+        this._tariffs.forEach((tariff) => this.loadCharges(tariff));
     }
 
-    private async loadCharges(tariffAndProduct: TariffWithProduct, periodFrom: Date, periodTo: Date) {
+    private async loadCharges(tariffAndProduct: TariffWithProduct) {
         if (tariffAndProduct.tariff.links.every((link) => link.rel != this.chargeType)) {
             return;
         }
@@ -174,8 +186,8 @@ export class UnitRatesChartComponent {
             register: 'electricity-tariffs', // TODO
             chargeType: this.chargeType,
             pageSize: 1500,
-            periodFrom,
-            periodTo,
+            periodFrom: this._periodFrom,
+            periodTo: this._periodTo,
         });
 
         this.chargesLookup[tariffAndProduct.tariff.code] = values;
@@ -188,8 +200,39 @@ function formatDateString(date: Date): string {
     return date.toDateString();
 }
 
-function getSpanLabel(span: Timespan): string {
+function getSpanLabel(span?: Timespan): string {
+    if (span == null) {
+        return '';
+    }
+
     const time = `${format(span.valid_from, 'HH:mm')} - ${format(span.valid_to, 'HH:mm')}`;
 
     return `${formatDateString(span.valid_from)} ${time}`;
+}
+
+/**
+ * TODO
+ * @param end
+ * @param selectedPeriod
+ * @returns
+ */
+function calculatePeriodStart(end: Date, selectedPeriod: TimePeriod): Date {
+    const day = 3600 * 1000 * 24;
+
+    let start: number;
+
+    switch (selectedPeriod) {
+        case 'Day':
+            start = end.getTime() - day;
+            break;
+        case 'Week':
+            start = end.getTime() - day * 7;
+            break;
+
+        case 'Month':
+            start = end.getTime() - day * 28;
+            break;
+    }
+
+    return new Date(start);
 }
