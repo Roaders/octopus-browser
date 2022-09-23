@@ -1,4 +1,4 @@
-export const IncludeVatValues = ['Vat Incl.', 'Vat Excl.', 'Show Both'] as const;
+export const IncludeVatValues = ['incl', 'excl', 'both'] as const;
 export type IncludeVat = typeof IncludeVatValues[number];
 
 export const TimePeriods = ['Day', 'Week', 'Month'] as const;

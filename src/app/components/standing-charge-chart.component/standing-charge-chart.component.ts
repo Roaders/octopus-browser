@@ -63,7 +63,7 @@ export class StandingChargeChartComponent {
     }
 
     private getDatasets(): ChartDataset<'bar'>[] {
-        const inclVatValues = ['Vat Incl.', 'Vat Excl.'] as const;
+        const inclVatValues = ['incl', 'excl'] as const;
         return inclVatValues
             .filter((value) => filterInclVatValues(value, this.includeVat))
             .map((label) => ({
@@ -73,6 +73,6 @@ export class StandingChargeChartComponent {
     }
 
     private getValue(tariff: ITariff): number {
-        return this.includeVat === 'Vat Incl.' ? tariff.standing_charge_inc_vat : tariff.standing_charge_exc_vat;
+        return this.includeVat === 'incl' ? tariff.standing_charge_inc_vat : tariff.standing_charge_exc_vat;
     }
 }

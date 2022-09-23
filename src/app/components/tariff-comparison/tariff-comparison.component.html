@@ -4,7 +4,7 @@
     <div>
         <div *ngFor="let vatValue of vatValues" class="form-check form-check-inline">
             <input class="form-check-input" type="checkbox" id="inlineCheckbox_{{vatValue}}" [checked]="includeVat === vatValue" (change)="includeVat = vatValue">
-            <label class="form-check-label" for="inlineCheckbox_{{vatValue}}">{{vatValue}}</label>
+            <label class="form-check-label" for="inlineCheckbox_{{vatValue}}">{{vatDisplayValue(vatValue)}}</label>
         </div>
     </div>
 

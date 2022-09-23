@@ -1,5 +1,13 @@
 import { Regions } from '../constants';
-import { IBillingType, IBillingTypes, IRegister, ITariff, TariffRegisterRecord } from '../contracts';
+import {
+    IBillingType,
+    IBillingTypes,
+    IncludeVat,
+    IRegister,
+    ITariff,
+    TariffRegisterRecord,
+    TimePeriod,
+} from '../contracts';
 
 export function isITariff(value: unknown): value is ITariff {
     const tariff = value as ITariff;
@@ -30,6 +38,32 @@ export function isIBillingType(value: unknown): value is IBillingType {
 
 export function isDefined<T>(value: T | null | undefined): value is T {
     return value != null;
+}
+
+export function isIncludeVat(value: unknown): value is IncludeVat {
+    const inclVat = value as IncludeVat;
+
+    switch (inclVat) {
+        case 'both':
+        case 'excl':
+        case 'incl':
+            return true;
+        default:
+            return false;
+    }
+}
+
+export function isPeriod(value: unknown): value is TimePeriod {
+    const periodValue = value as TimePeriod;
+
+    switch (periodValue) {
+        case 'Day':
+        case 'Month':
+        case 'Week':
+            return true;
+        default:
+            return false;
+    }
 }
 
 function isObject(value: unknown): boolean {

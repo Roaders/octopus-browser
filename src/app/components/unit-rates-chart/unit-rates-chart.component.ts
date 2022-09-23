@@ -6,8 +6,18 @@ import { format } from 'date-fns';
 
 import { defaultInclVat, defaultPeriod } from '../../constants';
 import { ChartSeries, ICharge, IncludeVat, LinkRel, TariffWithProduct, TimePeriod, TimePeriods } from '../../contracts';
-import { getChartSerieses, getTimes, isDefined, mapDateToCharge } from '../../helpers';
+import {
+    getChartSerieses,
+    getDisplayValue,
+    getTimes,
+    isDefined,
+    isPeriod,
+    mapDateToCharge,
+    UrlHelper,
+} from '../../helpers';
 import { OctopusService } from '../../services';
+
+const periodUrlParam = 'period';
 
 type Timespan = Omit<ICharge<Date>, 'value_exc_vat' | 'value_inc_vat'>;
 type ChartData = { charge?: ICharge<Date>; date: Date; value?: number } & TariffWithProduct;
@@ -17,10 +27,12 @@ type ChartData = { charge?: ICharge<Date>; date: Date; value?: number } & Tariff
     templateUrl: './unit-rates-chart.component.html',
 })
 export class UnitRatesChartComponent {
-    constructor(private octopusService: OctopusService) {
+    constructor(private octopusService: OctopusService, private urlHelper: UrlHelper) {
+        const savedPeriod = urlHelper.getSingleParam(periodUrlParam);
+
         this.chargeType = 'standard_unit_rates';
         this._includeVat = defaultInclVat;
-        this.selectedPeriod = defaultPeriod;
+        this.selectedPeriod = isPeriod(savedPeriod) ? savedPeriod : defaultPeriod;
     }
 
     private chargeType: LinkRel;
@@ -44,6 +56,8 @@ export class UnitRatesChartComponent {
         this._periodFrom = calculatePeriodStart(this._periodTo, this.selectedPeriod);
 
         this.loadTariffs();
+
+        this.urlHelper.saveUrlParam(periodUrlParam, value);
     }
 
     // updated in constructor by setting selectedPeriod
@@ -135,7 +149,7 @@ export class UnitRatesChartComponent {
 
                 return {
                     data,
-                    label: `${series.tariff.code} ${series.incVat ? 'Incl. Vat' : 'Excl. Vat'}`,
+                    label: `${series.tariff.code} ${getDisplayValue(series.incVat ? 'incl' : 'excl')}`,
                     pointRadius: 0,
                     lineTension: 0,
                     borderWidth: 1,

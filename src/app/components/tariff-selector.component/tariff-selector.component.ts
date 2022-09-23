@@ -2,7 +2,7 @@ import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { firstValueFrom, from, map, shareReplay } from 'rxjs';
 
 import { IBillingType, IProduct, IProductDetail, IRegion, IRegister } from '../../contracts';
-import { isIBillingType, isIRegister, SelectedItemHelper, SelectedItemHelperFactory } from '../../helpers';
+import { isIBillingType, isIRegister, SelectedItemHelper, SelectedItemHelperFactory, UrlHelper } from '../../helpers';
 import { OctopusService } from '../../services';
 import { ProductFilterService } from '../../services/product-filter.service';
 
@@ -14,7 +14,8 @@ export class TariffSelectorComponent implements OnInit {
     constructor(
         private productsService: ProductFilterService,
         private octopusService: OctopusService,
-        selectedItemFactory: SelectedItemHelperFactory
+        selectedItemFactory: SelectedItemHelperFactory,
+        private urlHelper: UrlHelper
     ) {
         this.productSelector = selectedItemFactory.create({
             displayFunction: (product) =>
@@ -169,14 +170,7 @@ export class TariffSelectorComponent implements OnInit {
             this.billingSelector.deeplinkValue,
         ].join('|');
 
-        const urlParams = `?tariff=${values}`;
-
-        if (urlParams != window.location.search) {
-            const url = new URL(window.location.href);
-            url.searchParams.set('tariff', values);
-
-            window.history.pushState({}, '', url);
-        }
+        this.urlHelper.saveUrlParam('tariff', values);
     }
 }
 
