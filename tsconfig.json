@@ -21,6 +21,8 @@
             "es2020",
             "dom"
         ],
+        "resolveJsonModule": true,
+        "allowSyntheticDefaultImports": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true
     },

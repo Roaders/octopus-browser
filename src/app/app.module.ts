@@ -3,6 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { NgChartsModule } from 'ng2-charts';
 
+import npmPackage from '../../package.json';
 import { AppComponent } from './components/app/app.component';
 import { ItemSelectComponent } from './components/item-select/item-select.component';
 import { ProductFilterComponent } from './components/product-filter/product-filter.component';
@@ -35,4 +36,8 @@ import { YesNoPipe } from './pipes/yes-no.pipe';
     providers: [],
     bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule {
+    constructor() {
+        window.document.title = `Octopus Browser v${npmPackage.version}`;
+    }
+}
