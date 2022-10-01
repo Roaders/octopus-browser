@@ -16,7 +16,7 @@ module.exports = {
         sourceType: 'module',
     },
     plugins: ['@typescript-eslint', 'simple-import-sort', 'import'],
-    ignorePatterns: ['dist/'],
+    ignorePatterns: ['build/'],
     rules: {
         'sort-imports': 'off',
         'prettier/prettier': ['error', { endOfLine: 'auto', tabWidth: 4, singleQuote: true, printWidth: 120 }],

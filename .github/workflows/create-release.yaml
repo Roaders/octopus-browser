@@ -35,4 +35,4 @@ jobs:
         if: ${{ steps.release.outputs.released == 'true' }}
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          folder: build/infraspace-supply-chain
+          folder: build/octopus-browser
