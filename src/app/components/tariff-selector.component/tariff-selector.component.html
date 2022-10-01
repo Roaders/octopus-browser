@@ -1,8 +1,0 @@
-
-<div class="py-2 d-flex flex-row flew-wrap">
-    
-    <item-select [selectionHelper]="productSelector"></item-select>
-    <item-select *ngIf="productSelector.selectedItem != null" [selectionHelper]="registerSelector"></item-select>
-    <item-select *ngIf="registerSelector.selectedItem != null" [selectionHelper]="regionSelector"></item-select>
-    <item-select *ngIf="regionSelector.selectedItem != null" [selectionHelper]="billingSelector"></item-select>
-</div>
