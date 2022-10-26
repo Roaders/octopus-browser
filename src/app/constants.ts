@@ -36,3 +36,9 @@ export const Regions: IRegion[] = [
     { code: 'N', MPAN: 18, name: 'Southern Scotland' },
     { code: 'P', MPAN: 17, name: 'Northern Scotland' },
 ];
+
+export const HexLookup: Record<IncludeVat, string> = {
+    both: '',
+    excl: '#FF7F50',
+    incl: '#6495ED',
+};

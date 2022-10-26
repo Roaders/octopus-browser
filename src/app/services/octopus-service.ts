@@ -1,5 +1,5 @@
 import { Injectable } from '@morgan-stanley/needle';
-import { config, firstValueFrom, from, map, mergeMap, Observable, shareReplay } from 'rxjs';
+import { firstValueFrom, from, map, mergeMap, Observable, shareReplay } from 'rxjs';
 import * as format from 'string-template';
 
 import { CHARGES_URI, PRODUCT_URI, PRODUCTS_URI, Regions } from '../constants';
@@ -11,8 +11,6 @@ import {
     IProductDetail,
     IProductsResponse,
     IRegion,
-    ITariff,
-    LinkRel,
     LoadChargesConfig,
 } from '../contracts';
 
@@ -95,10 +93,10 @@ export class OctopusService {
     }
 }
 function parseDate(value: string): Date;
-function parseDate(value: string | null): Date | null;
-function parseDate(value: string | null): Date | null {
+function parseDate(value?: string | null): Date | undefined;
+function parseDate(value?: string | null): Date | undefined {
     if (value == null) {
-        return null;
+        return undefined;
     }
     return new Date(value);
 }

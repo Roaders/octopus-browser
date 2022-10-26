@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { HighchartsChartModule } from 'highcharts-angular';
 import { NgChartsModule } from 'ng2-charts';
 
 import npmPackage from '../../package.json';
@@ -32,7 +33,7 @@ import { YesNoPipe } from './pipes/yes-no.pipe';
         StandingChargeChartComponent,
         UnitRatesChartComponent,
     ],
-    imports: [BrowserModule, NgbModule, NgChartsModule],
+    imports: [BrowserModule, NgbModule, NgChartsModule, HighchartsChartModule],
     providers: [],
     bootstrap: [AppComponent],
 })
