@@ -145,10 +145,21 @@ export class UnitRatesChartComponent {
                     return undefined;
                 }
 
-                const data = charges.map((charge) => [
-                    charge.valid_from.getTime(),
-                    series.incVat ? charge?.value_inc_vat : charge?.value_exc_vat,
-                ]);
+                const lastCharge: Required<ICharge<Date>> = {
+                    ...charges[charges.length - 1],
+                    valid_to: charges[charges.length - 1].valid_to ?? new Date(),
+                };
+
+                const data = [
+                    ...charges.map((charge) => [
+                        charge.valid_from.getTime(),
+                        series.incVat ? charge.value_inc_vat : charge.value_exc_vat,
+                    ]),
+                    [
+                        lastCharge.valid_to.getTime(),
+                        series.incVat ? lastCharge.value_inc_vat : lastCharge.value_exc_vat,
+                    ],
+                ];
 
                 return {
                     data,

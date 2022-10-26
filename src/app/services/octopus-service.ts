@@ -93,10 +93,10 @@ export class OctopusService {
     }
 }
 function parseDate(value: string): Date;
-function parseDate(value: string | null): Date | null;
-function parseDate(value: string | null): Date | null {
+function parseDate(value?: string | null): Date | undefined;
+function parseDate(value?: string | null): Date | undefined {
     if (value == null) {
-        return null;
+        return undefined;
     }
     return new Date(value);
 }

@@ -33,8 +33,8 @@ export interface IProduct<TDate extends DateOrString = string> {
      */
     term: number;
     brand: string;
-    available_from: TDate | null;
-    available_to: TDate | null;
+    available_from?: TDate;
+    available_to?: TDate;
     // undocumented (might disappear)
     direction?: 'IMPORT' | 'EXPORT' | null;
     links: [ILink<'self'>];
@@ -117,7 +117,7 @@ export interface ICharge<TDate extends DateOrString = string> {
     value_exc_vat: number;
     value_inc_vat: number;
     valid_from: TDate;
-    valid_to: TDate;
+    valid_to?: TDate;
 }
 
 export interface LoadChargesConfig {
