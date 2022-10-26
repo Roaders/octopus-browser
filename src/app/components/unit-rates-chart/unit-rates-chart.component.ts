@@ -1,25 +1,14 @@
 import { Component, Input } from '@angular/core';
-import { format } from 'date-fns';
+import {} from 'date-fns';
 import * as Highcharts from 'highcharts';
-import { Options, SeriesOptionsType } from 'highcharts';
+import { Chart, Options, SeriesOptionsType } from 'highcharts';
 
-import { defaultInclVat, defaultPeriod } from '../../constants';
-import { ChartSeries, ICharge, IncludeVat, LinkRel, TariffWithProduct, TimePeriod, TimePeriods } from '../../contracts';
-import {
-    getChartSerieses,
-    getDisplayValue,
-    getTimes,
-    isDefined,
-    isPeriod,
-    mapDateToCharge,
-    UrlHelper,
-} from '../../helpers';
+import { defaultInclVat, defaultPeriod, HexLookup } from '../../constants';
+import { ICharge, IncludeVat, LinkRel, TariffWithProduct, TimePeriod, TimePeriods } from '../../contracts';
+import { getChartSerieses, getDisplayValue, isDefined, isPeriod, UrlHelper } from '../../helpers';
 import { OctopusService } from '../../services';
 
 const periodUrlParam = 'period';
-
-type Timespan = Omit<ICharge<Date>, 'value_exc_vat' | 'value_inc_vat'>;
-type ChartData = { charge?: ICharge<Date>; date: Date; value: number } & TariffWithProduct;
 
 @Component({
     selector: 'unit-rates-chart',
@@ -28,9 +17,40 @@ type ChartData = { charge?: ICharge<Date>; date: Date; value: number } & TariffW
 export class UnitRatesChartComponent {
     public readonly highCharts = Highcharts;
 
-    private _chartOptions: Options | undefined;
+    private _chart: Chart | undefined;
 
-    public get chartOptions(): Options | undefined {
+    private _chartCallback(chart: Chart): void {
+        this._chart = chart;
+
+        this.updateUnitRatesChart();
+    }
+
+    public chartCallback = this._chartCallback.bind(this);
+
+    private _chartOptions: Options = {
+        accessibility: {
+            enabled: false,
+        },
+        title: undefined,
+        time: {
+            useUTC: false,
+        },
+        xAxis: {
+            type: 'datetime',
+        },
+        yAxis: {
+            title: { text: 'p/kwh' },
+        },
+        plotOptions: {
+            line: {
+                marker: {
+                    enabled: false,
+                },
+            },
+        },
+    };
+
+    public get chartOptions(): Options {
         return this._chartOptions;
     }
 
@@ -99,73 +119,49 @@ export class UnitRatesChartComponent {
     }
 
     private updateUnitRatesChart() {
-        this._chartOptions = {
-            accessibility: {
-                enabled: false,
-            },
-            title: undefined,
-            xAxis: {
-                type: 'datetime',
-            },
-            yAxis: {
-                title: { text: 'p/kwh' },
-            },
-            series: this.generateDataSets(),
-        };
+        if (this._chart == null) {
+            return;
+        }
+        const dataSets = this.generateDataSets();
+        const existingSeries = this._chart.series ?? [];
+
+        existingSeries
+            .filter((series) => dataSets.every((dataset) => dataset.id != series.options.id))
+            .forEach((series) => series.remove(false));
+
+        dataSets
+            .filter((dataset) => existingSeries.every((series) => dataset.id != series.options.id))
+            .forEach((dataset) => this._chart?.addSeries(dataset, false, false));
+
+        this._chart.redraw(false);
     }
 
     private generateDataSets(): SeriesOptionsType[] {
-        const data = [
-            [new Date(2022, 1, 3).getTime(), 1],
-            [new Date(2022, 1, 4).getTime(), 2],
-        ];
-
-        return getChartSerieses(this.tariffs, this.includeVat)
+        const serieses = getChartSerieses(this.tariffs, this.includeVat)
             .map<SeriesOptionsType | undefined>((series) => {
-                const chartData = this.generateData(series)?.map((data) => [data.date.getTime(), data.value]);
+                const charges = this.chargesLookup[series.tariff.code];
 
-                if (chartData == null) {
+                if (charges == null) {
                     return undefined;
                 }
+
+                const data = charges.map((charge) => [
+                    charge.valid_from.getTime(),
+                    series.incVat ? charge?.value_inc_vat : charge?.value_exc_vat,
+                ]);
 
                 return {
                     data,
                     type: 'line',
                     name: `${series.tariff.code} ${getDisplayValue(series.incVat ? 'incl' : 'excl')}`,
-                };
-            })
-            .filter(isDefined);
-    }
-
-    // TODO just return charges array
-    private generateData(series: ChartSeries): ChartData[] | undefined {
-        const times = getTimes(this._periodFrom, this._periodTo);
-        const charges = this.chargesLookup[series.tariff.code];
-
-        if (charges == null) {
-            return undefined;
-        }
-
-        //TODO: reduce data to include one entry for start and end of span
-        const data = times
-            .map((date) => {
-                const charge = mapDateToCharge(date, charges);
-
-                if (charge == null) {
-                    return undefined;
-                }
-
-                return {
-                    date,
-                    value: series.incVat ? charge?.value_inc_vat : charge?.value_exc_vat,
-                    charge,
-                    tariff: series.tariff,
-                    product: series.product,
+                    id: `${series.tariff.code}_${series.incVat ? 'incl' : 'excl'}`,
+                    color: series.incVat ? HexLookup['incl'] : HexLookup['excl'],
+                    step: 'left',
                 };
             })
             .filter(isDefined);
 
-        return data;
+        return serieses;
     }
 
     private loadTariffs() {
@@ -194,20 +190,6 @@ export class UnitRatesChartComponent {
 
         this.updateUnitRatesChart();
     }
-}
-
-function formatDateString(date: Date): string {
-    return date.toDateString();
-}
-
-function getSpanLabel(span?: Timespan): string {
-    if (span == null) {
-        return '';
-    }
-
-    const time = `${format(span.valid_from, 'HH:mm')} - ${format(span.valid_to, 'HH:mm')}`;
-
-    return `${formatDateString(span.valid_from)} ${time}`;
 }
 
 /**

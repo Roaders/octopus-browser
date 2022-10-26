@@ -1,5 +1,5 @@
 import { Injectable } from '@morgan-stanley/needle';
-import { config, firstValueFrom, from, map, mergeMap, Observable, shareReplay } from 'rxjs';
+import { firstValueFrom, from, map, mergeMap, Observable, shareReplay } from 'rxjs';
 import * as format from 'string-template';
 
 import { CHARGES_URI, PRODUCT_URI, PRODUCTS_URI, Regions } from '../constants';
@@ -11,8 +11,6 @@ import {
     IProductDetail,
     IProductsResponse,
     IRegion,
-    ITariff,
-    LinkRel,
     LoadChargesConfig,
 } from '../contracts';
 
