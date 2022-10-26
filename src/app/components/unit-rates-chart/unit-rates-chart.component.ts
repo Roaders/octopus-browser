@@ -137,7 +137,7 @@ export class UnitRatesChartComponent {
     }
 
     private generateDataSets(): SeriesOptionsType[] {
-        const serieses = getChartSerieses(this.tariffs, this.includeVat)
+        return getChartSerieses(this.tariffs, this.includeVat)
             .map<SeriesOptionsType | undefined>((series) => {
                 const charges = this.chargesLookup[series.tariff.code];
 
@@ -160,8 +160,6 @@ export class UnitRatesChartComponent {
                 };
             })
             .filter(isDefined);
-
-        return serieses;
     }
 
     private loadTariffs() {
